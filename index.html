@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cruce de Reposición</title>
+    <!-- Librería para manejo de Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+      }
+
+      header {
+        background-color: #f57c00;
+        color: white;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      header h1 {
+        margin: 0;
+        font-size: 24px;
+      }
+
+      .div-buttons {
+        display: flex;
+        gap: 10px;
+      }
+
+      .div-buttons button {
+        background-color: white;
+        color: #c8102e;
+        border: 2px solid #c8102e;
+        padding: 8px 12px;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+
+      .container {
+        padding: 20px;
+      }
+
+      input[type="file"] {
+        display: block;
+        margin: 10px 0 20px 0;
+      }
+
+      button {
+        margin: 10px 5px;
+        padding: 10px 15px;
+        background-color: #c8102e;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: #e65100;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background-color: white;
+      }
+
+      table,
+      th,
+      td {
+        border: 1px solid #ddd;
+      }
+
+      th,
+      td {
+        padding: 8px;
+        text-align: left;
+      }
+
+      th {
+        background-color: #c8102e;
+        color: white;
+      }
+
+      footer {
+        background-color: #333;
+        color: white;
+        text-align: center;
+        padding: 10px;
+        position: fixed;
+        width: 100%;
+        bottom: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Gestión de Reposición de Mercadería</h1>
+      <div class="div-buttons">
+        <button onclick="filtrarDiv('DIV 01')">Div 01</button>
+        <button onclick="filtrarDiv('DIV 02')">Div 02</button>
+        <button onclick="filtrarDiv('DIV 03')">Div 03</button>
+        <button onclick="filtrarDiv('DIV 04')">Div 04</button>
+        <button onclick="filtrarDiv('TODOS')">Mostrar Todos</button>
+      </div>
+    </header>
+
+    <div class="container">
+      <h2>Cargar archivos para cruce</h2>
+      <label><strong>Archivo de Pistoleo (Reposición):</strong></label>
+      <input type="file" id="pistoleoFile" accept=".xlsx, .csv" />
+
+      <label><strong>Archivo del WMS:</strong></label>
+      <input type="file" id="wmsFile" accept=".xlsx, .csv" />
+
+      <button onclick="procesarCruce()">Procesar Cruce</button>
+      <button onclick="exportarResultado()">Exportar Resultado a Excel</button>
+
+      <div id="resultado"></div>
+
+      <hr />
+      <h2>Verificar Reposición Realizada</h2>
+      <label><strong>Archivo de Resultado del Cruce:</strong></label>
+      <input type="file" id="resultadoFile" accept=".xlsx, .csv" />
+
+      <label><strong>Archivo Detalle Reposición WMS:</strong></label>
+      <input type="file" id="detalleFile" accept=".xlsx, .csv" />
+
+      <button onclick="verificarReposicion()">Verificar Reposición</button>
+      <div id="resultadoSeguimiento"></div>
+    </div>
+
+    <footer>PROMART HOMECENTERS</footer>
+
+    <script>
+      let resultadoFinal = [];
+      let resultadoFiltrado = [];
+
+      function leerArchivo(file, callback) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const workbook = XLSX.read(e.target.result, { type: "binary" });
+          const sheet = workbook.Sheets[workbook.SheetNames[0]];
+          callback(XLSX.utils.sheet_to_json(sheet, { defval: "" }));
+        };
+        reader.readAsBinaryString(file);
+      }
+
+      function procesarCruce() {
+        const pistoleoFile = document.getElementById("pistoleoFile").files[0];
+        const wmsFile = document.getElementById("wmsFile").files[0];
+
+        if (!pistoleoFile || !wmsFile) {
+          alert("Por favor selecciona ambos archivos.");
+          return;
+        }
+
+        leerArchivo(pistoleoFile, (pistoleoData) => {
+          leerArchivo(wmsFile, (wmsData) => {
+            resultadoFinal = pistoleoData
+              .map((p) => {
+                const sku = String(p.SKU || p["Sku"] || p["sku"]).trim();
+                const quantity = parseInt(p.QUANTITY || p["Cantidad"] || 0);
+
+                const wmsMatch = wmsData.find(
+                  (w) => String(w.SKU || w["Sku"] || w["sku"]).trim() === sku
+                );
+
+                const stock = wmsMatch
+                  ? parseInt(wmsMatch["Un Actual"] || wmsMatch["Stock"] || 0)
+                  : 0;
+
+                const lpn =
+                  wmsMatch?.["N\u00c3\u00bamero de LPN"] ||
+                  wmsMatch?.["N\u00famero de LPN"] ||
+                  wmsMatch?.LPN ||
+                  "No asignado";
+
+                return {
+                  Ubicacion:
+                    wmsMatch?.["Ubicación"] ||
+                    wmsMatch?.["Ubicacion"] ||
+                    "No encontrada",
+                  "Número de LPN": lpn,
+                  SKU: sku,
+                  PRODUCTO: p.PRODUCTO || p["Descripción"] || "Sin nombre",
+                  "Un Actual": stock,
+                  "A Reponer": stock > 0 ? Math.min(stock, quantity) : 0,
+                  Jerarquía:
+                    wmsMatch?.["Jerarquía de artículo 2"] ||
+                    wmsMatch?.["Jerarquía de artículo 2"] ||
+                    "",
+                };
+              })
+              .filter((item) => item["A Reponer"] > 0);
+
+            resultadoFiltrado = [...resultadoFinal];
+            mostrarResultado();
+          });
+        });
+      }
+
+      function filtrarDiv(div) {
+        const filtros = {
+          "DIV 01": ["HERRAMIENTAS", "FERRETERIA", "MATERIALES DE CONTRUCCION"],
+          "DIV 02": [
+            "PISOS Y REVESTIMIENTOS",
+            "ELECTRO HOGAR",
+            "PINTURAS",
+            "BANOS",
+          ],
+          "DIV 03": ["ELECTRICIDAD", "GASFITERIA", "ILUMINACION"],
+          "DIV 04": [
+            "AIRE LIBRE Y TEMPORADA",
+            "JARDIN",
+            "LIMPIEZA",
+            "MUEBLES",
+            "ORGANIZACION Y DECORACION",
+          ],
+        };
+
+        if (div === "TODOS") {
+          resultadoFiltrado = [...resultadoFinal];
+        } else if (filtros[div]) {
+          resultadoFiltrado = resultadoFinal.filter((p) =>
+            filtros[div].includes(p["Jerarquía"].toUpperCase())
+          );
+        }
+
+        mostrarResultado();
+      }
+
+      function mostrarResultado() {
+        const div = document.getElementById("resultado");
+        div.innerHTML = "";
+
+        if (resultadoFiltrado.length === 0) {
+          div.innerHTML =
+            "<p>No hay productos con stock disponible para reposición.</p>";
+          return;
+        }
+
+        let tabla =
+          "<table><tr><th>Ubicación</th><th>Número de LPN</th><th>SKU</th><th>PRODUCTO</th><th>Un Actual</th><th>A Reponer</th><th>Jerarquía</th></tr>";
+        resultadoFiltrado.forEach((p) => {
+          tabla += `<tr>
+            <td>${p.Ubicacion}</td>
+            <td>${p["Número de LPN"]}</td>
+            <td>${p.SKU}</td>
+            <td>${p.PRODUCTO}</td>
+            <td>${p["Un Actual"]}</td>
+            <td>${p["A Reponer"]}</td>
+            <td>${p.Jerarquía}</td>
+          </tr>`;
+        });
+        tabla += "</table>";
+
+        div.innerHTML = tabla;
+      }
+
+      function exportarResultado() {
+        if (resultadoFiltrado.length === 0) {
+          alert("No hay resultados para exportar.");
+          return;
+        }
+
+        const datosExportar = resultadoFiltrado.map((p) => ({
+          Ubicacion: p.Ubicacion,
+          "Número de LPN": p["Número de LPN"],
+          SKU: p.SKU,
+          PRODUCTO: p.PRODUCTO,
+          "Un Actual": p["Un Actual"],
+          "A Reponer": p["A Reponer"],
+          Jerarquía: p.Jerarquía,
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(datosExportar);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Cruce Reposición");
+
+        XLSX.writeFile(wb, "resultado_cruce.xlsx");
+      }
+
+      function verificarReposicion() {
+        const resultadoFile = document.getElementById("resultadoFile").files[0];
+        const detalleFile = document.getElementById("detalleFile").files[0];
+
+        if (!resultadoFile || !detalleFile) {
+          alert("Por favor selecciona ambos archivos.");
+          return;
+        }
+
+        leerArchivo(resultadoFile, (resultadoData) => {
+          leerArchivo(detalleFile, (detalleData) => {
+            const movimientos = detalleData.reduce((acc, cur) => {
+              const sku = String(cur.SKU || cur["Sku"] || cur["sku"]).trim();
+              const ajuste = parseInt(
+                cur["Cantidad Ajustada"] || cur["Cantidad"] || 0
+              );
+              if (!acc[sku]) acc[sku] = 0;
+              acc[sku] += ajuste;
+              return acc;
+            }, {});
+
+            const faltantes = resultadoData.filter((item) => {
+              const sku = String(item.SKU || item["Sku"] || item["sku"]).trim();
+              const solicitado = parseInt(
+                item["A Reponer"] || item["Cantidad"] || 0
+              );
+              const repuesto = Math.abs(movimientos[sku] || 0);
+              return repuesto < solicitado;
+            });
+
+            const div = document.getElementById("resultadoSeguimiento");
+            if (faltantes.length === 0) {
+              div.innerHTML = "<p>Todos los productos han sido repuestos.</p>";
+              return;
+            }
+
+            let tabla =
+              "<h3>Productos que aún faltan por reponer:</h3><table><tr><th>SKU</th><th>PRODUCTO</th><th>A Reponer</th><th>Repuesto</th></tr>";
+            faltantes.forEach((f) => {
+              const sku = f.SKU;
+              const solicitado = parseInt(f["A Reponer"]);
+              const repuesto = Math.abs(movimientos[sku] || 0);
+              tabla += `<tr><td>${sku}</td><td>${f.PRODUCTO}</td><td>${solicitado}</td><td>${repuesto}</td></tr>`;
+            });
+            tabla += "</table>";
+
+            div.innerHTML = tabla;
+          });
+        });
+      }
+    </script>
+  </body>
+</html>
