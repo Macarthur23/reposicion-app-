@@ -13,7 +13,6 @@
         margin: 0;
         padding: 0;
       }
-
       header {
         background-color: #f57c00;
         color: white;
@@ -22,17 +21,14 @@
         justify-content: space-between;
         align-items: center;
       }
-
       header h1 {
         margin: 0;
         font-size: 24px;
       }
-
       .div-buttons {
         display: flex;
         gap: 10px;
       }
-
       .div-buttons button {
         background-color: white;
         color: #c8102e;
@@ -41,16 +37,13 @@
         cursor: pointer;
         border-radius: 4px;
       }
-
       .container {
         padding: 20px;
       }
-
       input[type="file"] {
         display: block;
         margin: 10px 0 20px 0;
       }
-
       button {
         margin: 10px 5px;
         padding: 10px 15px;
@@ -60,35 +53,29 @@
         border-radius: 5px;
         cursor: pointer;
       }
-
       button:hover {
         background-color: #e65100;
       }
-
       table {
         width: 100%;
         border-collapse: collapse;
         margin-top: 20px;
         background-color: white;
       }
-
       table,
       th,
       td {
         border: 1px solid #ddd;
       }
-
       th,
       td {
         padding: 8px;
         text-align: left;
       }
-
       th {
         background-color: #c8102e;
         color: white;
       }
-
       footer {
         background-color: #333;
         color: white;
@@ -98,7 +85,7 @@
         width: 100%;
         bottom: 0;
       }
-   </style>
+    </style>
   </head>
   <body>
     <header>
@@ -134,7 +121,6 @@
       <input type="file" id="detalleFile" accept=".xlsx, .csv" />
 
       <button onclick="verificarReposicion()">Verificar Reposición</button>
-      <button onclick="exportarSeguimiento()">Exportar Seguimiento a Excel</button>
       <div id="resultadoSeguimiento"></div>
     </div>
 
@@ -143,7 +129,6 @@
     <script>
       let resultadoFinal = [];
       let resultadoFiltrado = [];
-      let faltantesReposicion = [];
 
       function leerArchivo(file, callback) {
         const reader = new FileReader();
@@ -168,13 +153,24 @@
           leerArchivo(wmsFile, (wmsData) => {
             resultadoFinal = pistoleoData
               .map((p) => {
-                const sku = String(p.SKU || p.Sku || p.sku).trim();
-                const quantity = parseInt(p.QUANTITY || p.Cantidad || 0);
-                const wmsMatch = wmsData.find((w) => String(w.SKU || w.Sku || w.sku).trim() === sku);
-                const stock = wmsMatch ? parseInt(wmsMatch["Un Actual"] || wmsMatch.Stock || 0) : 0;
-                const lpn = wmsMatch?.["Número de LPN"] || wmsMatch?.LPN || "No asignado";
+                const sku = String(p.SKU || p["Sku"] || p["sku"]).trim();
+                const quantity = parseInt(p.QUANTITY || p["Cantidad"] || 0);
+                const wmsMatch = wmsData.find(
+                  (w) => String(w.SKU || w["Sku"] || w["sku"]).trim() === sku
+                );
+                const stock = wmsMatch
+                  ? parseInt(wmsMatch["Un Actual"] || wmsMatch["Stock"] || 0)
+                  : 0;
+                const lpn =
+                  wmsMatch?.["Número de LPN"] ||
+                  wmsMatch?.["Núm. de LPN"] ||
+                  wmsMatch?.LPN ||
+                  "No asignado";
                 return {
-                  Ubicacion: wmsMatch?.["Ubicación"] || wmsMatch?.Ubicacion || "No encontrada",
+                  Ubicacion:
+                    wmsMatch?.["Ubicación"] ||
+                    wmsMatch?.["Ubicacion"] ||
+                    "No encontrada",
                   "Número de LPN": lpn,
                   SKU: sku,
                   PRODUCTO: p.PRODUCTO || p["Descripción"] || "Sin nombre",
@@ -184,30 +180,63 @@
                 };
               })
               .filter((item) => item["A Reponer"] > 0);
+
             resultadoFiltrado = [...resultadoFinal];
             mostrarResultado();
           });
         });
       }
 
+      function filtrarDiv(div) {
+        const filtros = {
+          "DIV 01": ["HERRAMIENTAS", "FERRETERIA", "MATERIALES DE CONTRUCCION"],
+          "DIV 02": [
+            "PISOS Y REVESTIMIENTOS",
+            "ELECTRO HOGAR",
+            "PINTURAS",
+            "BANOS",
+          ],
+          "DIV 03": ["ELECTRICIDAD", "GASFITERIA", "ILUMINACION"],
+          "DIV 04": [
+            "AIRE LIBRE Y TEMPORADA",
+            "JARDIN",
+            "LIMPIEZA",
+            "MUEBLES",
+            "ORGANIZACION Y DECORACION",
+          ],
+        };
+        if (div === "TODOS") {
+          resultadoFiltrado = [...resultadoFinal];
+        } else if (filtros[div]) {
+          resultadoFiltrado = resultadoFinal.filter((p) =>
+            filtros[div].includes((p["Jerarquía"] || "").toUpperCase())
+          );
+        }
+        mostrarResultado();
+      }
+
       function mostrarResultado() {
         const div = document.getElementById("resultado");
         div.innerHTML = "";
         if (resultadoFiltrado.length === 0) {
-          div.innerHTML = "<p>No hay productos con stock disponible para reposición.</p>";
+          div.innerHTML =
+            "<p>No hay productos con stock disponible para reposición.</p>";
           return;
         }
-        let tabla = "<table><tr><th>Ubicación</th><th>Número de LPN</th><th>SKU</th><th>PRODUCTO</th><th>Un Actual</th><th>A Reponer</th><th>Jerarquía</th></tr>";
+        let tabla =
+          "<table><tr><th>Ubicación</th><th>Número de LPN</th><th>SKU</th><th>PRODUCTO</th><th>Un Actual</th><th>A Reponer</th><th>Jerarquía</th></tr>";
         resultadoFiltrado.forEach((p) => {
-          tabla += `<tr>
-            <td>${p.Ubicacion}</td>
-            <td>${p["Número de LPN"]}</td>
-            <td>${p.SKU}</td>
-            <td>${p.PRODUCTO}</td>
-            <td>${p["Un Actual"]}</td>
-            <td>${p["A Reponer"]}</td>
-            <td>${p.Jerarquía}</td>
-          </tr>`;
+          tabla += (
+            <tr>
+              <td>${p.Ubicacion}</td>
+              <td>${p["Número de LPN"]}</td>
+              <td>${p.SKU}</td>
+              <td>${p.PRODUCTO}</td>
+              <td>${p["Un Actual"]}</td>
+              <td>${p["A Reponer"]}</td>
+              <td>${p.Jerarquía}</td>
+            </tr>
+          );
         });
         tabla += "</table>";
         div.innerHTML = tabla;
@@ -218,7 +247,16 @@
           alert("No hay resultados para exportar.");
           return;
         }
-        const ws = XLSX.utils.json_to_sheet(resultadoFiltrado);
+        const datosExportar = resultadoFiltrado.map((p) => ({
+          Ubicacion: p.Ubicacion,
+          "Número de LPN": p["Número de LPN"],
+          SKU: p.SKU,
+          PRODUCTO: p.PRODUCTO,
+          "Un Actual": p["Un Actual"],
+          "A Reponer": p["A Reponer"],
+          Jerarquía: p.Jerarquía,
+        }));
+        const ws = XLSX.utils.json_to_sheet(datosExportar);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Cruce Reposición");
         XLSX.writeFile(wb, "resultado_cruce.xlsx");
@@ -234,48 +272,46 @@
         leerArchivo(resultadoFile, (resultadoData) => {
           leerArchivo(detalleFile, (detalleData) => {
             const movimientos = detalleData.reduce((acc, cur) => {
-              const sku = String(cur.SKU || cur.Sku || cur.sku).trim();
-              const ajuste = parseInt(cur["Cantidad Ajustada"] || cur.Cantidad || 0);
+              const sku = String(cur.SKU || cur["Sku"] || cur["sku"]).trim();
+              const ajuste = parseInt(
+                cur["Cantidad Ajustada"] || cur["Cantidad"] || 0
+              );
               if (!acc[sku]) acc[sku] = 0;
               acc[sku] += ajuste;
               return acc;
             }, {});
-            faltantesReposicion = resultadoData.map((item) => {
-              const sku = String(item.SKU || item.Sku || item.sku).trim();
-              const solicitado = parseInt(item["A Reponer"] || item.Cantidad || 0);
+            const faltantes = resultadoData.filter((item) => {
+              const sku = String(item.SKU || item["Sku"] || item["sku"]).trim();
+              const solicitado = parseInt(
+                item["A Reponer"] || item["Cantidad"] || 0
+              );
               const repuesto = Math.abs(movimientos[sku] || 0);
-              return { ...item, repuesto, SKU: sku };
-            }).filter((item) => item.repuesto < parseInt(item["A Reponer"]));
+              return repuesto < solicitado;
+            });
             const div = document.getElementById("resultadoSeguimiento");
-            if (faltantesReposicion.length === 0) {
+            if (faltantes.length === 0) {
               div.innerHTML = "<p>Todos los productos han sido repuestos.</p>";
               return;
             }
-            let tabla = "<h3>Productos que aún faltan por reponer:</h3><table><tr><th>SKU</th><th>PRODUCTO</th><th>A Reponer</th><th>Repuesto</th></tr>";
-            faltantesReposicion.forEach((f) => {
-              tabla += `<tr><td>${f.SKU}</td><td>${f.PRODUCTO}</td><td>${f["A Reponer"]}</td><td>${f.repuesto}</td></tr>`;
+            let tabla =
+              "<h3>Productos que aún faltan por reponer:</h3><table><tr><th>SKU</th><th>PRODUCTO</th><th>A Reponer</th><th>Repuesto</th></tr>";
+            faltantes.forEach((f) => {
+              const sku = f.SKU;
+              const solicitado = parseInt(f["A Reponer"]);
+              const repuesto = Math.abs(movimientos[sku] || 0);
+              tabla += (
+                <tr>
+                  <td>${sku}</td>
+                  <td>${f.PRODUCTO}</td>
+                  <td>${solicitado}</td>
+                  <td>${repuesto}</td>
+                </tr>
+              );
             });
             tabla += "</table>";
             div.innerHTML = tabla;
           });
         });
-      }
-
-      function exportarSeguimiento() {
-        if (faltantesReposicion.length === 0) {
-          alert("No hay seguimiento pendiente por exportar.");
-          return;
-        }
-        const datosExportar = faltantesReposicion.map((f) => ({
-          SKU: f.SKU,
-          PRODUCTO: f.PRODUCTO,
-          "A Reponer": f["A Reponer"],
-          Repuesto: f.repuesto,
-        }));
-        const ws = XLSX.utils.json_to_sheet(datosExportar);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Seguimiento");
-        XLSX.writeFile(wb, "seguimiento_reposicion.xlsx");
       }
     </script>
   </body>
