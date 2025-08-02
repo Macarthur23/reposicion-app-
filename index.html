@@ -170,6 +170,11 @@
                     w["Núm. de LPN"] ||
                     w.LPN ||
                     "No asignado",
+                  Pale:
+                    w["Número de Pale"] ||
+                    w["Num. Pale"] ||
+                    w["Pale"] ||
+                    "Sin pale",
                   Stock: parseInt(w["Un Actual"] || w["Stock"] || 0),
                   Jerarquia: w["Jerarquía de artículo 2"] || "",
                 }))
@@ -191,6 +196,7 @@
                   "Un Actual": ubic.Stock,
                   "A Reponer": cantidadAReponer,
                   Jerarquía: ubic.Jerarquia,
+                  "Número de Pale": ubic.Pale,
                 });
 
                 restante -= cantidadAReponer;
@@ -240,11 +246,12 @@
           return;
         }
         let tabla =
-          "<table><tr><th>Ubicación</th><th>Número de LPN</th><th>SKU</th><th>PRODUCTO</th><th>Un Actual</th><th>A Reponer</th><th>Jerarquía</th></tr>";
+          "<table><tr><th>Ubicación</th><th>Número de LPN</th><th>Número de Pale</th><th>SKU</th><th>PRODUCTO</th><th>Un Actual</th><th>A Reponer</th><th>Jerarquía</th></tr>";
         resultadoFiltrado.forEach((p) => {
           tabla += `<tr>
               <td>${p.Ubicacion}</td>
               <td>${p["Número de LPN"]}</td>
+              <td>${p["Número de Pale"]}</td>
               <td>${p.SKU}</td>
               <td>${p.PRODUCTO}</td>
               <td>${p["Un Actual"]}</td>
@@ -264,6 +271,7 @@
         const datosExportar = resultadoFiltrado.map((p) => ({
           Ubicacion: p.Ubicacion,
           "Número de LPN": p["Número de LPN"],
+          "Número de Pale": p["Número de Pale"],
           SKU: p.SKU,
           PRODUCTO: p.PRODUCTO,
           "Un Actual": p["Un Actual"],
@@ -328,4 +336,3 @@
     </script>
   </body>
 </html>
-
