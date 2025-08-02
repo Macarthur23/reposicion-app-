@@ -151,35 +151,51 @@
 
         leerArchivo(pistoleoFile, (pistoleoData) => {
           leerArchivo(wmsFile, (wmsData) => {
-            resultadoFinal = pistoleoData
-              .map((p) => {
-                const sku = String(p.SKU || p["Sku"] || p["sku"]).trim();
-                const quantity = parseInt(p.QUANTITY || p["Cantidad"] || 0);
-                const wmsMatch = wmsData.find(
+            resultadoFinal = [];
+
+            pistoleoData.forEach((p) => {
+              const sku = String(p.SKU || p["Sku"] || p["sku"]).trim();
+              const quantity = parseInt(p.QUANTITY || p["Cantidad"] || 0);
+              const producto = p.PRODUCTO || p["Descripción"] || "Sin nombre";
+
+              const ubicacionesSKU = wmsData
+                .filter(
                   (w) => String(w.SKU || w["Sku"] || w["sku"]).trim() === sku
-                );
-                const stock = wmsMatch
-                  ? parseInt(wmsMatch["Un Actual"] || wmsMatch["Stock"] || 0)
-                  : 0;
-                const lpn =
-                  wmsMatch?.["Número de LPN"] ||
-                  wmsMatch?.["Núm. de LPN"] ||
-                  wmsMatch?.LPN ||
-                  "No asignado";
-                return {
+                )
+                .map((w) => ({
                   Ubicacion:
-                    wmsMatch?.["Ubicación"] ||
-                    wmsMatch?.["Ubicacion"] ||
-                    "No encontrada",
-                  "Número de LPN": lpn,
+                    w["Ubicación"] || w["Ubicacion"] || "No encontrada",
+                  LPN:
+                    w["Número de LPN"] ||
+                    w["Núm. de LPN"] ||
+                    w.LPN ||
+                    "No asignado",
+                  Stock: parseInt(w["Un Actual"] || w["Stock"] || 0),
+                  Jerarquia: w["Jerarquía de artículo 2"] || "",
+                }))
+                .filter((w) => w.Stock > 0)
+                .sort((a, b) => b.Stock - a.Stock);
+
+              let restante = quantity;
+
+              for (const ubic of ubicacionesSKU) {
+                if (restante <= 0) break;
+
+                const cantidadAReponer = Math.min(ubic.Stock, restante);
+
+                resultadoFinal.push({
+                  Ubicacion: ubic.Ubicacion,
+                  "Número de LPN": ubic.LPN,
                   SKU: sku,
-                  PRODUCTO: p.PRODUCTO || p["Descripción"] || "Sin nombre",
-                  "Un Actual": stock,
-                  "A Reponer": stock > 0 ? Math.min(stock, quantity) : 0,
-                  Jerarquía: wmsMatch?.["Jerarquía de artículo 2"] || "",
-                };
-              })
-              .filter((item) => item["A Reponer"] > 0);
+                  PRODUCTO: producto,
+                  "Un Actual": ubic.Stock,
+                  "A Reponer": cantidadAReponer,
+                  Jerarquía: ubic.Jerarquia,
+                });
+
+                restante -= cantidadAReponer;
+              }
+            });
 
             resultadoFiltrado = [...resultadoFinal];
             mostrarResultado();
@@ -226,8 +242,7 @@
         let tabla =
           "<table><tr><th>Ubicación</th><th>Número de LPN</th><th>SKU</th><th>PRODUCTO</th><th>Un Actual</th><th>A Reponer</th><th>Jerarquía</th></tr>";
         resultadoFiltrado.forEach((p) => {
-          tabla += (
-            <tr>
+          tabla += `<tr>
               <td>${p.Ubicacion}</td>
               <td>${p["Número de LPN"]}</td>
               <td>${p.SKU}</td>
@@ -235,8 +250,7 @@
               <td>${p["Un Actual"]}</td>
               <td>${p["A Reponer"]}</td>
               <td>${p.Jerarquía}</td>
-            </tr>
-          );
+            </tr>`;
         });
         tabla += "</table>";
         div.innerHTML = tabla;
@@ -299,14 +313,12 @@
               const sku = f.SKU;
               const solicitado = parseInt(f["A Reponer"]);
               const repuesto = Math.abs(movimientos[sku] || 0);
-              tabla += (
-                <tr>
+              tabla += `<tr>
                   <td>${sku}</td>
                   <td>${f.PRODUCTO}</td>
                   <td>${solicitado}</td>
                   <td>${repuesto}</td>
-                </tr>
-              );
+                </tr>`;
             });
             tabla += "</table>";
             div.innerHTML = tabla;
@@ -316,3 +328,4 @@
     </script>
   </body>
 </html>
+
