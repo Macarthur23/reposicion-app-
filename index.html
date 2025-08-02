@@ -1,338 +1,291 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cruce de Reposición</title>
-    <!-- Librería para manejo de Excel -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUCE DE ARCHIVO BARRIDO</title>
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #f4f4f4;
-        margin: 0;
-        padding: 0;
-      }
-      header {
-        background-color: #f57c00;
-        color: white;
-        padding: 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-      header h1 {
-        margin: 0;
-        font-size: 24px;
-      }
-      .div-buttons {
-        display: flex;
-        gap: 10px;
-      }
-      .div-buttons button {
-        background-color: white;
-        color: #c8102e;
-        border: 2px solid #c8102e;
-        padding: 8px 12px;
-        cursor: pointer;
-        border-radius: 4px;
-      }
-      .container {
-        padding: 20px;
-      }
-      input[type="file"] {
-        display: block;
-        margin: 10px 0 20px 0;
-      }
-      button {
-        margin: 10px 5px;
-        padding: 10px 15px;
-        background-color: #c8102e;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-      }
-      button:hover {
-        background-color: #e65100;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-        background-color: white;
-      }
-      table,
-      th,
-      td {
-        border: 1px solid #ddd;
-      }
-      th,
-      td {
-        padding: 8px;
-        text-align: left;
-      }
-      th {
-        background-color: #c8102e;
-        color: white;
-      }
-      footer {
-        background-color: #333;
-        color: white;
-        text-align: center;
-        padding: 10px;
-        position: fixed;
-        width: 100%;
-        bottom: 0;
-      }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 900px;
+        }
+        h1, h2 {
+            color: #444;
+            text-align: center;
+        }
+        .file-upload-box {
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        input[type="file"] {
+            display: block;
+            margin-top: 10px;
+        }
+        .button-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, opacity 0.3s ease;
+            font-weight: bold;
+        }
+        .btn-primary {
+            background-color: #d9534f; /* Rojo */
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background-color: #c9302c;
+        }
+        .btn-secondary {
+            background-color: #5cb85c; /* Verde */
+            color: #fff;
+        }
+        .btn-secondary:hover {
+            background-color: #4cae4c;
+        }
+        .btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        #resultado-container {
+            margin-top: 30px;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+            white-space: nowrap; /* Evita que el texto se parta */
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .dias-retraso-rojo {
+            background-color: #ffcccc; /* Color de fondo para celdas con retraso */
+            color: #d9534f;
+            font-weight: bold;
+        }
+        #loading-message {
+            text-align: center;
+            font-style: italic;
+            margin-top: 20px;
+            display: none; /* Oculto por defecto */
+        }
     </style>
-  </head>
-  <body>
-    <header>
-      <h1>Gestión de Reposición de Mercadería</h1>
-      <div class="div-buttons">
-        <button onclick="filtrarDiv('DIV 01')">Div 01</button>
-        <button onclick="filtrarDiv('DIV 02')">Div 02</button>
-        <button onclick="filtrarDiv('DIV 03')">Div 03</button>
-        <button onclick="filtrarDiv('DIV 04')">Div 04</button>
-        <button onclick="filtrarDiv('TODOS')">Mostrar Todos</button>
-      </div>
-    </header>
-
+</head>
+<body>
     <div class="container">
-      <h2>Cargar archivos para cruce</h2>
-      <label><strong>Archivo de Pistoleo (Reposición):</strong></label>
-      <input type="file" id="pistoleoFile" accept=".xlsx, .csv" />
+        <h1>CRUCE DE ARCHIVO BARRIDO</h1>
 
-      <label><strong>Archivo del WMS:</strong></label>
-      <input type="file" id="wmsFile" accept=".xlsx, .csv" />
+        <div class="file-upload-box">
+            <h2>Archivo de Escaneo:</h2>
+            <input type="file" id="fileEscaneo" accept=".xlsx, .xls">
+        </div>
 
-      <button onclick="procesarCruce()">Procesar Cruce</button>
-      <button onclick="exportarResultado()">Exportar Resultado a Excel</button>
+        <div class="file-upload-box">
+            <h2>Archivo DAD:</h2>
+            <input type="file" id="fileDAD" accept=".xlsx, .xls">
+        </div>
 
-      <div id="resultado"></div>
+        <div class="button-group">
+            <button id="procesarBtn" class="btn btn-primary">Procesar Cruce</button>
+            <button id="exportarBtn" class="btn btn-secondary" disabled>Exportar Resultado a Excel</button>
+        </div>
 
-      <hr />
-      <h2>Verificar Reposición Realizada</h2>
-      <label><strong>Archivo de Resultado del Cruce:</strong></label>
-      <input type="file" id="resultadoFile" accept=".xlsx, .csv" />
+        <p id="loading-message">Procesando, por favor espere...</p>
 
-      <label><strong>Archivo Detalle Reposición WMS:</strong></label>
-      <input type="file" id="detalleFile" accept=".xlsx, .csv" />
-
-      <button onclick="verificarReposicion()">Verificar Reposición</button>
-      <div id="resultadoSeguimiento"></div>
+        <div id="resultado-container">
+            </div>
     </div>
 
-    <footer>PROMART HOMECENTERS</footer>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    
     <script>
-      let resultadoFinal = [];
-      let resultadoFiltrado = [];
+        const fileEscaneoInput = document.getElementById('fileEscaneo');
+        const fileDADInput = document.getElementById('fileDAD');
+        const procesarBtn = document.getElementById('procesarBtn');
+        const exportarBtn = document.getElementById('exportarBtn');
+        const resultadoContainer = document.getElementById('resultado-container');
+        const loadingMessage = document.getElementById('loading-message');
 
-      function leerArchivo(file, callback) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const workbook = XLSX.read(e.target.result, { type: "binary" });
-          const sheet = workbook.Sheets[workbook.SheetNames[0]];
-          callback(XLSX.utils.sheet_to_json(sheet, { defval: "" }));
-        };
-        reader.readAsBinaryString(file);
-      }
+        let datosDAD = [];
+        let datosEscaneo = [];
 
-      function procesarCruce() {
-        const pistoleoFile = document.getElementById("pistoleoFile").files[0];
-        const wmsFile = document.getElementById("wmsFile").files[0];
-
-        if (!pistoleoFile || !wmsFile) {
-          alert("Por favor selecciona ambos archivos.");
-          return;
+        // Función para leer un archivo Excel
+        function leerArchivoExcel(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const sheetName = workbook.SheetNames[0];
+                        const sheet = workbook.Sheets[sheetName];
+                        const jsonData = XLSX.utils.sheet_to_json(sheet);
+                        resolve(jsonData);
+                    } catch (error) {
+                        reject("Error al leer el archivo. Asegúrese de que sea un archivo Excel válido.");
+                    }
+                };
+                reader.onerror = (error) => reject("Error al cargar el archivo.");
+                reader.readAsArrayBuffer(file);
+            });
         }
 
-        leerArchivo(pistoleoFile, (pistoleoData) => {
-          leerArchivo(wmsFile, (wmsData) => {
-            resultadoFinal = [];
+        // Evento para el botón de procesar
+        procesarBtn.addEventListener('click', async () => {
+            if (!fileDADInput.files[0] || !fileEscaneoInput.files[0]) {
+                alert("Por favor, suba ambos archivos.");
+                return;
+            }
 
-            pistoleoData.forEach((p) => {
-              const sku = String(p.SKU || p["Sku"] || p["sku"]).trim();
-              const quantity = parseInt(p.QUANTITY || p["Cantidad"] || 0);
-              const producto = p.PRODUCTO || p["Descripción"] || "Sin nombre";
+            // Deshabilitar botones y mostrar mensaje de carga
+            procesarBtn.disabled = true;
+            exportarBtn.disabled = true;
+            loadingMessage.style.display = 'block';
+            resultadoContainer.innerHTML = '';
 
-              const ubicacionesSKU = wmsData
-                .filter(
-                  (w) => String(w.SKU || w["Sku"] || w["sku"]).trim() === sku
-                )
-                .map((w) => ({
-                  Ubicacion:
-                    w["Ubicación"] || w["Ubicacion"] || "No encontrada",
-                  LPN:
-                    w["Número de LPN"] ||
-                    w["Núm. de LPN"] ||
-                    w.LPN ||
-                    "No asignado",
-                  Pale:
-                    w["Número de Pale"] ||
-                    w["Num. Pale"] ||
-                    w["Pale"] ||
-                    "Sin pale",
-                  Stock: parseInt(w["Un Actual"] || w["Stock"] || 0),
-                  Jerarquia: w["Jerarquía de artículo 2"] || "",
-                }))
-                .filter((w) => w.Stock > 0)
-                .sort((a, b) => b.Stock - a.Stock);
+            try {
+                datosEscaneo = await leerArchivoExcel(fileEscaneoInput.files[0]);
+                datosDAD = await leerArchivoExcel(fileDADInput.files[0]);
 
-              let restante = quantity;
+                const datosEscaneoSet = new Set(datosEscaneo.map(item => `${item['Código de N/V']}_${item['LPN']}`));
+                const resultadoFinal = datosDAD.map(filaDAD => {
+                    const idDAD = `${filaDAD['Código de N/V']}_${filaDAD['LPN']}`;
+                    const escaneado = datosEscaneoSet.has(idDAD) ? 'SI' : 'NO';
+                    
+                    const fechaOriginalStr = filaDAD['Fecha Original'];
+                    const fechaOriginal = new Date(fechaOriginalStr);
+                    const hoy = new Date();
+                    let diasRetraso = '';
 
-              for (const ubic of ubicacionesSKU) {
-                if (restante <= 0) break;
+                    // Cálculo de días de retraso, solo si la fecha es válida
+                    if (!isNaN(fechaOriginal.getTime())) {
+                        diasRetraso = Math.floor((hoy - fechaOriginal) / (1000 * 60 * 60 * 24));
+                        if (diasRetraso <= 0) {
+                            diasRetraso = '';
+                        }
+                    }
 
-                const cantidadAReponer = Math.min(ubic.Stock, restante);
-
-                resultadoFinal.push({
-                  Ubicacion: ubic.Ubicacion,
-                  "Número de LPN": ubic.LPN,
-                  SKU: sku,
-                  PRODUCTO: producto,
-                  "Un Actual": ubic.Stock,
-                  "A Reponer": cantidadAReponer,
-                  Jerarquía: ubic.Jerarquia,
-                  "Número de Pale": ubic.Pale,
+                    return {
+                        'Estado de despacho': filaDAD['Estado de despacho'] || '',
+                        'Fecha Original': fechaOriginalStr || '',
+                        'Días de retraso': diasRetraso,
+                        'Código de N/V': filaDAD['Código de N/V'] || '',
+                        'SKU': filaDAD['SKU'] || '',
+                        'LPN': filaDAD['LPN'] || '',
+                        'Descripción': filaDAD['Descripción'] || '',
+                        'Cantidad': filaDAD['Cantidad'] || '',
+                        'Documento del cliente': filaDAD['Documento del cliente'] || '',
+                        'Nombre de cliente': filaDAD['Nombre de cliente'] || '',
+                        'Modalidad de despacho': filaDAD['Modalidad de despacho'] || '',
+                        'Escaneado': escaneado
+                    };
                 });
 
-                restante -= cantidadAReponer;
-              }
-            });
-
-            resultadoFiltrado = [...resultadoFinal];
-            mostrarResultado();
-          });
-        });
-      }
-
-      function filtrarDiv(div) {
-        const filtros = {
-          "DIV 01": ["HERRAMIENTAS", "FERRETERIA", "MATERIALES DE CONTRUCCION"],
-          "DIV 02": [
-            "PISOS Y REVESTIMIENTOS",
-            "ELECTRO HOGAR",
-            "PINTURAS",
-            "BANOS",
-          ],
-          "DIV 03": ["ELECTRICIDAD", "GASFITERIA", "ILUMINACION"],
-          "DIV 04": [
-            "AIRE LIBRE Y TEMPORADA",
-            "JARDIN",
-            "LIMPIEZA",
-            "MUEBLES",
-            "ORGANIZACION Y DECORACION",
-          ],
-        };
-        if (div === "TODOS") {
-          resultadoFiltrado = [...resultadoFinal];
-        } else if (filtros[div]) {
-          resultadoFiltrado = resultadoFinal.filter((p) =>
-            filtros[div].includes((p["Jerarquía"] || "").toUpperCase())
-          );
-        }
-        mostrarResultado();
-      }
-
-      function mostrarResultado() {
-        const div = document.getElementById("resultado");
-        div.innerHTML = "";
-        if (resultadoFiltrado.length === 0) {
-          div.innerHTML =
-            "<p>No hay productos con stock disponible para reposición.</p>";
-          return;
-        }
-        let tabla =
-          "<table><tr><th>Ubicación</th><th>Número de LPN</th><th>Número de Pale</th><th>SKU</th><th>PRODUCTO</th><th>Un Actual</th><th>A Reponer</th><th>Jerarquía</th></tr>";
-        resultadoFiltrado.forEach((p) => {
-          tabla += `<tr>
-              <td>${p.Ubicacion}</td>
-              <td>${p["Número de LPN"]}</td>
-              <td>${p["Número de Pale"]}</td>
-              <td>${p.SKU}</td>
-              <td>${p.PRODUCTO}</td>
-              <td>${p["Un Actual"]}</td>
-              <td>${p["A Reponer"]}</td>
-              <td>${p.Jerarquía}</td>
-            </tr>`;
-        });
-        tabla += "</table>";
-        div.innerHTML = tabla;
-      }
-
-      function exportarResultado() {
-        if (resultadoFiltrado.length === 0) {
-          alert("No hay resultados para exportar.");
-          return;
-        }
-        const datosExportar = resultadoFiltrado.map((p) => ({
-          Ubicacion: p.Ubicacion,
-          "Número de LPN": p["Número de LPN"],
-          "Número de Pale": p["Número de Pale"],
-          SKU: p.SKU,
-          PRODUCTO: p.PRODUCTO,
-          "Un Actual": p["Un Actual"],
-          "A Reponer": p["A Reponer"],
-          Jerarquía: p.Jerarquía,
-        }));
-        const ws = XLSX.utils.json_to_sheet(datosExportar);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Cruce Reposición");
-        XLSX.writeFile(wb, "resultado_cruce.xlsx");
-      }
-
-      function verificarReposicion() {
-        const resultadoFile = document.getElementById("resultadoFile").files[0];
-        const detalleFile = document.getElementById("detalleFile").files[0];
-        if (!resultadoFile || !detalleFile) {
-          alert("Por favor selecciona ambos archivos.");
-          return;
-        }
-        leerArchivo(resultadoFile, (resultadoData) => {
-          leerArchivo(detalleFile, (detalleData) => {
-            const movimientos = detalleData.reduce((acc, cur) => {
-              const sku = String(cur.SKU || cur["Sku"] || cur["sku"]).trim();
-              const ajuste = parseInt(
-                cur["Cantidad Ajustada"] || cur["Cantidad"] || 0
-              );
-              if (!acc[sku]) acc[sku] = 0;
-              acc[sku] += ajuste;
-              return acc;
-            }, {});
-            const faltantes = resultadoData.filter((item) => {
-              const sku = String(item.SKU || item["Sku"] || item["sku"]).trim();
-              const solicitado = parseInt(
-                item["A Reponer"] || item["Cantidad"] || 0
-              );
-              const repuesto = Math.abs(movimientos[sku] || 0);
-              return repuesto < solicitado;
-            });
-            const div = document.getElementById("resultadoSeguimiento");
-            if (faltantes.length === 0) {
-              div.innerHTML = "<p>Todos los productos han sido repuestos.</p>";
-              return;
+                mostrarResultado(resultadoFinal);
+                exportarBtn.disabled = false;
+            } catch (error) {
+                console.error("Error al procesar los archivos:", error);
+                alert("Ocurrió un error: " + error);
+            } finally {
+                procesarBtn.disabled = false;
+                loadingMessage.style.display = 'none';
             }
-            let tabla =
-              "<h3>Productos que aún faltan por reponer:</h3><table><tr><th>SKU</th><th>PRODUCTO</th><th>A Reponer</th><th>Repuesto</th></tr>";
-            faltantes.forEach((f) => {
-              const sku = f.SKU;
-              const solicitado = parseInt(f["A Reponer"]);
-              const repuesto = Math.abs(movimientos[sku] || 0);
-              tabla += `<tr>
-                  <td>${sku}</td>
-                  <td>${f.PRODUCTO}</td>
-                  <td>${solicitado}</td>
-                  <td>${repuesto}</td>
-                </tr>`;
-            });
-            tabla += "</table>";
-            div.innerHTML = tabla;
-          });
         });
-      }
+
+        // Función para mostrar los resultados en la tabla HTML
+        function mostrarResultado(datos) {
+            if (datos.length === 0) {
+                resultadoContainer.innerHTML = "<p>No se encontraron resultados.</p>";
+                return;
+            }
+
+            let tablaHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Estado de despacho</th>
+                            <th>Fecha Original</th>
+                            <th>Días de retraso</th>
+                            <th>Código de N/V</th>
+                            <th>SKU</th>
+                            <th>LPN</th>
+                            <th>Descripción</th>
+                            <th>Cantidad</th>
+                            <th>Documento del cliente</th>
+                            <th>Nombre de cliente</th>
+                            <th>Modalidad de despacho</th>
+                            <th>Escaneado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            datos.forEach(item => {
+                const claseRetraso = (item['Días de retraso'] !== '' && item['Días de retraso'] > 0) ? 'dias-retraso-rojo' : '';
+                tablaHTML += `
+                    <tr>
+                        <td>${item['Estado de despacho']}</td>
+                        <td>${item['Fecha Original']}</td>
+                        <td class="${claseRetraso}">${item['Días de retraso']}</td>
+                        <td>${item['Código de N/V']}</td>
+                        <td>${item['SKU']}</td>
+                        <td>${item['LPN']}</td>
+                        <td>${item['Descripción']}</td>
+                        <td>${item['Cantidad']}</td>
+                        <td>${item['Documento del cliente']}</td>
+                        <td>${item['Nombre de cliente']}</td>
+                        <td>${item['Modalidad de despacho']}</td>
+                        <td>${item['Escaneado']}</td>
+                    </tr>
+                `;
+            });
+            tablaHTML += `
+                    </tbody>
+                </table>
+            `;
+            resultadoContainer.innerHTML = tablaHTML;
+        }
+
+        // Evento para el botón de exportar a Excel
+        exportarBtn.addEventListener('click', () => {
+            const tabla = document.querySelector('#resultado-container table');
+            if (tabla) {
+                const ws = XLSX.utils.table_to_sheet(tabla);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Resultado del Cruce");
+                XLSX.writeFile(wb, "Resultado_Cruce_Barrido.xlsx");
+            }
+        });
     </script>
-  </body>
+</body>
 </html>
