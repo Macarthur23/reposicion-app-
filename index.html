@@ -11,7 +11,7 @@
         background-color: #f4f4f4;
         margin: 0;
         padding: 0;
-        min-height: 100vh; /* Asegura que el body ocupe al menos toda la altura de la ventana */
+        min-height: 100vh;
         display: flex;
         flex-direction: column;
       }
@@ -41,7 +41,7 @@
       }
       .container {
         padding: 20px;
-        flex-grow: 1; /* Permite que el contenedor principal ocupe el espacio restante */
+        flex-grow: 1;
       }
       input[type="file"] {
         display: block;
@@ -59,10 +59,16 @@
       button:hover {
         background-color: #e65100;
       }
+      /* Estilos modificados para los contenedores de las tablas */
+      #resultado,
+      #resultadoSeguimiento {
+        max-height: 400px; /* Altura máxima del contenedor */
+        overflow-y: auto; /* Permite desplazamiento vertical */
+        margin-top: 20px;
+      }
       table {
         width: 100%;
         border-collapse: collapse;
-        margin-top: 20px;
         background-color: white;
       }
       table,
@@ -78,14 +84,16 @@
       th {
         background-color: #c8102e;
         color: white;
+        position: sticky; /* Cabecera fija */
+        top: 0;
+        z-index: 1;
       }
       footer {
         background-color: #333;
         color: white;
         text-align: center;
         padding: 10px;
-        /* Estilos modificados */
-        margin-top: auto; /* Empuja el footer hacia la parte inferior del contenedor flex */
+        margin-top: auto;
       }
     </style>
   </head>
@@ -260,15 +268,15 @@
           "<table><tr><th>Ubicación</th><th>Número de LPN</th><th>Número de Pale</th><th>SKU</th><th>PRODUCTO</th><th>Un Actual</th><th>A Reponer</th><th>Jerarquía</th></tr>";
         resultadoFiltrado.forEach((p) => {
           tabla += `<tr>
-              <td>${p.Ubicacion}</td>
-              <td>${p["Número de LPN"]}</td>
-              <td>${p["Número de Pale"]}</td>
-              <td>${p.SKU}</td>
-              <td>${p.PRODUCTO}</td>
-              <td>${p["Un Actual"]}</td>
-              <td>${p["A Reponer"]}</td>
-              <td>${p.Jerarquía}</td>
-            </tr>`;
+                    <td>${p.Ubicacion}</td>
+                    <td>${p["Número de LPN"]}</td>
+                    <td>${p["Número de Pale"]}</td>
+                    <td>${p.SKU}</td>
+                    <td>${p.PRODUCTO}</td>
+                    <td>${p["Un Actual"]}</td>
+                    <td>${p["A Reponer"]}</td>
+                    <td>${p.Jerarquía}</td>
+                </tr>`;
         });
         tabla += "</table>";
         div.innerHTML = tabla;
@@ -353,13 +361,13 @@
               "<h3>Productos que aún faltan por reponer:</h3><table><tr><th>Ubicación</th><th>Número de LPN</th><th>SKU</th><th>PRODUCTO</th><th>A Reponer</th><th>Repuesto</th></tr>";
             faltantes.forEach((f) => {
               tabla += `<tr>
-                  <td>${f.Ubicacion}</td>
-                  <td>${f["Número de LPN"]}</td>
-                  <td>${f.SKU}</td>
-                  <td>${f.PRODUCTO}</td>
-                  <td>${f["A Reponer"]}</td>
-                  <td>${f.Repuesto}</td>
-                </tr>`;
+                            <td>${f.Ubicacion}</td>
+                            <td>${f["Número de LPN"]}</td>
+                            <td>${f.SKU}</td>
+                            <td>${f.PRODUCTO}</td>
+                            <td>${f["A Reponer"]}</td>
+                            <td>${f.Repuesto}</td>
+                        </tr>`;
             });
             tabla += "</table>";
             div.innerHTML = tabla;
