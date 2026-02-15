@@ -43,7 +43,7 @@
 
 <div id="loginScreen">
     <div class="login-box">
-        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAgVBMVEX/gQD/////dgD/egD/07X/+PT/fwD/fQD/dQD/fgD/wp3/eAD/8+r///3/9e3/jS3/zqz/kTj/uon/zKn/kjv/t4L/nVP/s37/iiL/28P/oVv/1rn/u4z/lkL/yqX/sHn/59X/v5T/3sj/qmz/iBr/7d//sXP/mUr/pmT/4ND/6dq+7KlsAAAEf0lEQVR4nO2ca1ejMBRFIdEEjGKt2qpT+/Axdfz/P3DasS6nLYFAyAllnf0VlmV7Lo/ATZKEEEIIIYQQQgghhBBCCCGEEEIIIYQQQkKgtBFZlgmjVexDCYIyb6vleZqmxcu9kgN0lA+P6Q8jpWMfUNdk9+keV08m9iF1S3aWHjIWsQ+qS7JfR4JpOhuQYqngkFK0CA4nxZJzcFgpVggOQ7FScAiKNYKnr1greOqKDoKnregkeMqKjoJpem9XVHpD3tORiLOgNUUlzfXreLWY5KaPQ5EGguWKyjyMit325avI8QrVNBIsK9Rc7v2Fy0nPhlsNBY9T1DfnB3vMszgq5TQWPFTUz8d7/OrRNbeF4H6hqreyPea9UWwluKco3kv3eOrJ5aal4H+Kelq+Q9GPELNRS8EfxezwKvPNog/3xdYJ/ijmT7btnz0I0UtwpyjtVZBEf4DzKNEfRct1ZstH7GuNZ4I7RXFl3TqOfCJ6J7hlKqR944U8fcGNYtZXw44E0/S3vUqjGnYmWEVMQzfB9xt7Pj03dBO8lPLaSzGeoaNgrhLtpRjN0F0w8VOMZegouOtQ8FGMZNgkQU/FOIZNBX0Uoxg2K1FPxRiGzRP0UYxg6CioDsd1LRXxhm1K1EcRbpjdOgkeJdhaEW3oI9hOEWzoKGhtRWyhiDX0S3CLbjzSgBr6C7ZQRBr6lugXTQsVaNhFglsapogzzObdCDZVhBk6Cjq1GDQqVJRhdwluaZIiyLBbwUaKGEOzchJs0AWjb3plmE+cBJ0T3OKcIsRQ2D5f/k/RSNA9RYShHgcQdFZEGIrLEIKuhQowVA7/6zaCjikCDB2KtJ2gmyLAsOIbu6egkyLA0DzWHEN7wY3iXR8MX8IJOqSIqNLqXoTCsx2kLkVAp4JehRSsVQR0tlU+s/mV6BfVhYroGDL2G7N/gluqUlwiur6k9fVFN4KVipDOPZXYBDso0S+shVpgGqFl+VNNVwlusaU4AXW1ibJbYpeCNsULVLu+Mp+BBcsVz3DN+kocProtO5+4o6+Lg9+4gM5GEK97A/2x6P42peTe+67LNXhGiRbT5e6332c6yMOiMsnF92j75SPDt85qka8X08UkEcEW8lBSvH1sfuNZmjitwSoPP3Pu329E7+0mhBBCCCGEEEIIIYQQMnRyLTHEeemtjHlajc4QjMbPGXwBcGVubEvnBuHqNsFO6VI1nVEhWAX4RmlFvx1+n0XwiTsdc7+FH1pTN4eqM5R2aWUPAaQjasNRmwKOGeRyk6+jCaZpZ21XVdS10AZlDgjR2tYG4RxwJupFTMP0LnyZ1vfqB2Uavv3S/IlqiOjVj2sIuNQM31BCxxRHzACzEWZRDQFdwqp24k5QIFNIHeYfBuMR0WRqW8UYAuCGn0QN8REzfMpLlkvHcIVaRVjGejR9hi2xa+KcimvgGsJyjX+R8f4AXSQ5Nyvs26himqHfCUvzcfZ5DqFYzicixirXuTQCg5Gx1yknhBBCCCGEEEIIIYQQQgghhBBCCCGEEEIIIYQQGH8BqD5K56tylYIAAAAASUVORK5CYII=" alt="Logo" style="width: 150px; margin-bottom: 20px;">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTW-MJHw3jB2gHOcmHEgPiDfwaNlRybDB5Luw&s" alt="Logo" style="width: 150px; margin-bottom: 20px;">
         <h2>Acceso por Tienda</h2>
         <input type="text" id="storeCode" placeholder="Ejem: 404" maxlength="3">
         <br>
@@ -57,12 +57,12 @@
     <header>
         <h1 id="mainTitle">Gestión de Reposición</h1>
         <div class="div-buttons">
+            <button onclick="limpiarTodo()" style="background-color: #f57c00; color: white; border: none;">Limpiar Datos</button>
             <button onclick="filtrarDiv('DIV 01')">Div 01</button>
             <button onclick="filtrarDiv('DIV 02')">Div 02</button>
             <button onclick="filtrarDiv('DIV 03')">Div 03</button>
             <button onclick="filtrarDiv('DIV 04')">Div 04</button>
-            <button onclick="filtrarDiv('TODOS')">Mostrar Todos</button>
-            <button onclick="location.reload()" style="border-color: #333; color: #333;">Cambiar Tienda</button>
+            <button onclick="location.reload()" style="border-color: #333; color: #333;">Cerrar Sesión</button>
         </div>
     </header>
 
@@ -112,6 +112,22 @@
     let faltantes = [];
     let alertasCruce = 0;
     let proximosAVencerCount = 0;
+
+    function limpiarTodo() {
+        document.querySelectorAll('input[type="file"]').forEach(input => input.value = "");
+        resultadoFinal = [];
+        resultadoFiltrado = [];
+        faltantes = [];
+        alertasCruce = 0;
+        proximosAVencerCount = 0;
+        document.getElementById("resultado").innerHTML = "";
+        document.getElementById("resultadoSeguimiento").innerHTML = "";
+        document.getElementById("searchInput").style.display = "none";
+        document.getElementById("searchInput").value = "";
+        document.getElementById("resumenCruce").style.display = "none";
+        document.getElementById("exportarSeguimientoBtn").disabled = true;
+        alert("Formulario limpio. Ya puedes subir archivos nuevos.");
+    }
 
     function toggleLoader(show) { document.getElementById('loader').style.display = show ? 'flex' : 'none'; }
 
@@ -164,79 +180,94 @@
                         return acc;
                     }, {});
 
+                    // 1. Catálogo de stock real por LPN para control de inventario
+                    const stockRealWMS = wData.map(w => {
+                        const rawDate = w["Fecha de caducidad"] || w["Vencimiento"];
+                        const fVence = parsearFechaHora(rawDate);
+                        const ubiTxt = String(w["Ubicación"] || w["Ubicacion"] || "").trim();
+                        const res = reservasMap[ubiTxt] || { EL: "N/A", TM: "N/A" };
+                        const lpnStr = String(w["Número de LPN"] || w["LPN"] || "0");
+
+                        if (fVence && fVence <= limiteVenc && fVence >= hoy) proximosAVencerCount++;
+
+                        return {
+                            SKU: String(w.SKU || w["Sku"] || "").trim(),
+                            Ubi: ubiTxt,
+                            LPN: lpnStr,
+                            Pale: w["Número de Pale"] || w["Número de pallet"] || "N/A",
+                            StockDisponible: parseInt(w["Un Actual"] || 0),
+                            StockOriginal: parseInt(w["Un Actual"] || 0),
+                            VenceObj: fVence,
+                            LpnNum: parseInt(lpnStr.replace(/\D/g,'')) || 999999999,
+                            Jer: w["Jerarquía de artículo 2"] || "",
+                            EL: res.EL,
+                            TM: res.TM
+                        };
+                    }).filter(w => w.StockDisponible > 0);
+
+                    // 2. Mapa para agrupar por LPN y SKU (evitar duplicados visuales)
+                    const acumuladoPorLpnSku = {};
+
                     pData.forEach((p) => {
                         const sku = String(p.SKU || p["Sku"] || "").trim();
-                        const qty = parseInt(p.QUANTITY || p["Cantidad"] || 0);
+                        let restoADespachar = parseInt(p.QUANTITY || p["Cantidad"] || 0);
                         const prod = p.PRODUCTO || p["Descripción"] || "Sin nombre";
 
-                        const ubicSKU = wData.filter(w => String(w.SKU || w["Sku"] || "").trim() === sku)
-                        .map(w => {
-                            const rawDate = w["Fecha de caducidad"] || w["Vencimiento"];
-                            const fVence = parsearFechaHora(rawDate);
-                            const ubiTxt = String(w["Ubicación"] || w["Ubicacion"] || "").trim();
-                            const res = reservasMap[ubiTxt] || { EL: "N/A", TM: "N/A" };
+                        // Priorizar bultos por FEFO/FIFO
+                        const bultosCandidatos = stockRealWMS.filter(w => w.SKU === sku)
+                            .sort((a,b) => {
+                                if (a.VenceObj && b.VenceObj) {
+                                    if (a.VenceObj.getTime() !== b.VenceObj.getTime()) return a.VenceObj - b.VenceObj;
+                                } else if (a.VenceObj) return -1;
+                                else if (b.VenceObj) return 1;
+                                return a.LpnNum - b.LpnNum;
+                            });
 
-                            if (fVence && fVence <= limiteVenc && fVence >= hoy) proximosAVencerCount++;
+                        if (bultosCandidatos.length === 0) alertasCruce++;
 
-                            // Lógica corregida para leer "Número de Pale" específicamente
-                            const valorPale = w["Número de Pale"] || w["Número de pallet"] || w["Pale"] || w["Pallet"] || "N/A";
+                        for (const bulto of bultosCandidatos) {
+                            if (restoADespachar <= 0 || bulto.StockDisponible <= 0) break;
 
-                            return {
-                                Ubi: ubiTxt,
-                                LPN: w["Número de LPN"] || w["LPN"] || "N/A",
-                                Pale: valorPale,
-                                Stock: parseInt(w["Un Actual"] || 0),
-                                VenceObj: fVence,
-                                Jer: w["Jerarquía de artículo 2"] || "",
-                                EL: res.EL,
-                                TM: res.TM
-                            };
-                        }).filter(w => w.Stock > 0).sort((a,b) => {
-                            if (!a.VenceObj) return 1;
-                            if (!b.VenceObj) return -1;
-                            return a.VenceObj - b.VenceObj;
-                        });
+                            const extraible = Math.min(bulto.StockDisponible, restoADespachar);
+                            const key = `${bulto.LPN}_${sku}`;
 
-                        if (ubicSKU.length === 0) alertasCruce++;
+                            if (!acumuladoPorLpnSku[key]) {
+                                let diasRestantes = "N/A", fechaFinalTxt = "N/A", semaforo = "";
+                                if (bulto.VenceObj) {
+                                    const diff = bulto.VenceObj.getTime() - hoy.getTime();
+                                    diasRestantes = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                                    fechaFinalTxt = bulto.VenceObj.toLocaleDateString('es-ES', {day: '2-digit', month: '2-digit', year: 'numeric'});
+                                    if (diasRestantes <= 7) semaforo = "Rojo";
+                                    else if (diasRestantes <= 30) semaforo = "Amarillo";
+                                    else semaforo = "Verde";
+                                }
 
-                        let resto = qty;
-                        for (const u of ubicSKU) {
-                            if (resto <= 0) break;
-                            const can = Math.min(u.Stock, resto);
-
-                            let diasRestantes = "N/A";
-                            let fechaFinalTxt = "N/A";
-                            let semaforo = "";
-
-                            if (u.VenceObj) {
-                                const diff = u.VenceObj.getTime() - hoy.getTime();
-                                diasRestantes = Math.ceil(diff / (1000 * 60 * 60 * 24));
-                                fechaFinalTxt = u.VenceObj.toLocaleDateString('es-ES', {day: '2-digit', month: '2-digit', year: 'numeric'});
-
-                                if (diasRestantes <= 7) semaforo = "Rojo";
-                                else if (diasRestantes <= 30) semaforo = "Amarillo";
-                                else semaforo = "Verde";
+                                acumuladoPorLpnSku[key] = {
+                                    Ubicacion: bulto.Ubi,
+                                    "Número de Pale": bulto.Pale,
+                                    "Número de LPN": bulto.LPN,
+                                    SKU: sku,
+                                    PRODUCTO: prod,
+                                    "Un Actual": bulto.StockOriginal,
+                                    "A Reponer": 0,
+                                    "Días para Vencer": diasRestantes,
+                                    "Fecha Vencimiento": fechaFinalTxt,
+                                    "Semaforo": semaforo,
+                                    Jerarquía: bulto.Jer,
+                                    "Equipo Logístico": bulto.EL,
+                                    "Tipo Mercadería": bulto.TM
+                                };
                             }
 
-                            resultadoFinal.push({
-                                Ubicacion: u.Ubi,
-                                "Número de Pale": u.Pale,
-                                "Número de LPN": u.LPN,
-                                SKU: sku,
-                                PRODUCTO: prod,
-                                "Un Actual": u.Stock,
-                                "A Reponer": can,
-                                "Días para Vencer": diasRestantes,
-                                "Fecha Vencimiento": fechaFinalTxt,
-                                "Semaforo": semaforo,
-                                Jerarquía: u.Jer,
-                                "Equipo Logístico": u.EL,
-                                "Tipo Mercadería": u.TM
-                            });
-                            resto -= can;
+                            acumuladoPorLpnSku[key]["A Reponer"] += extraible;
+                            bulto.StockDisponible -= extraible;
+                            restoADespachar -= extraible;
                         }
                     });
+
+                    resultadoFinal = Object.values(acumuladoPorLpnSku);
                     resultadoFiltrado = [...resultadoFinal];
+
                     actualizarDashboard();
                     mostrarResultado();
                     document.getElementById('searchInput').style.display = 'block';
@@ -265,7 +296,8 @@
                 <th>Número de LPN</th>
                 <th>SKU</th>
                 <th>PRODUCTO</th>
-                <th>Reponer</th>
+                <th>Stock LPN</th>
+                <th>A Reponer</th>
                 <th>Días para Vencer</th>
                 <th>Equipo</th>
                 <th>Tipo Mercadería</th>
@@ -283,7 +315,8 @@
                 <td>${p["Número de LPN"]}</td>
                 <td>${p.SKU}</td>
                 <td>${p.PRODUCTO}</td>
-                <td style="font-weight: bold; text-align: center;">${p["A Reponer"]}</td>
+                <td style="text-align: center; color: #555;">${p["Un Actual"]}</td>
+                <td style="font-weight: bold; text-align: center; color: #c8102e;">${p["A Reponer"]}</td>
                 <td style="${styleSemaforo}">${p["Días para Vencer"]}</td>
                 <td>${p["Equipo Logístico"]}</td>
                 <td>${p["Tipo Mercadería"]}</td>
