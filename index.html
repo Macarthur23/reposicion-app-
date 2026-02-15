@@ -24,11 +24,12 @@
 
         #searchInput { padding: 10px; width: 100%; max-width: 300px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; }
         #loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 1000; justify-content: center; align-items: center; font-weight: bold; }
-        #resultado, #resultadoSeguimiento { max-height: 400px; overflow-y: auto; margin-top: 20px; }
+        #resultado, #resultadoSeguimiento { max-height: 500px; overflow-y: auto; margin-top: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         table { width: 100%; border-collapse: collapse; background-color: white; font-size: 0.85em; }
         table, th, td { border: 1px solid #ddd; }
-        th, td { padding: 8px; text-align: left; }
+        th, td { padding: 10px; text-align: left; }
         th { background-color: #c8102e; color: white; position: sticky; top: 0; z-index: 1; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
         footer { background-color: #333; color: white; text-align: center; padding: 10px; margin-top: auto; }
 
         /* LOGIN */
@@ -42,7 +43,7 @@
 
 <div id="loginScreen">
     <div class="login-box">
-        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAgVBMVEX/gQD/////dgD/egD/07X/+PT/fwD/fQD/dQD/fgD/wp3/eAD/8+r///3/9e3/jS3/zqz/kTj/uon/zKn/kjv/t4L/nVP/s37/iiL/28P/oVv/1rn/u4z/lkL/yqX/sHn/59X/v5T/3sj/qmz/iBr/7d//sXP/mUr/pmT/4ND/6dq+7KlsAAAEf0lEQVR4nO2ca1ejMBRFIdEEjGKt2qpT+/Axdfz/P3DasS6nLYFAyAllnf0VlmV7Lo/ATZKEEEIIIYQQQgghhBBCCCGEEEIIIYQQQkKgtBFZlgmjVexDCYIyb6vleZqmxcu9kgN0lA+P6Q8jpWMfUNdk9+keV08m9iF1S3aWHjIWsQ+qS7JfR4JpOhuQYqngkFK0CA4nxZJzcFgpVggOQ7FScAiKNYKnr1greOqKDoKnregkeMqKjoJpem9XVHpD3tORiLOgNUUlzfXreLWY5KaPQ5EGguWKyjyMit325avI8QrVNBIsK9Rc7v2Fy0nPhlsNBY9T1DfnB3vMszgq5TQWPFTUz8d7/OrRNbeF4H6hqreyPea9UWwluKco3kv3eOrJ5aal4H+Kelq+Q9GPELNRS8EfxezwKvPNog/3xdYJ/ijmT7btnz0I0UtwpyjtVZBEf4DzKNEfRct1ZstH7GuNZ4I7RXFl3TqOfCJ6J7hlKqR944U8fcGNYtZXw44E0/S3vUqjGnYmWEVMQzfB9xt7Pj03dBO8lPLaSzGeoaNgrhLtpRjN0F0w8VOMZegouOtQ8FGMZNgkQU/FOIZNBX0Uoxg2K1FPxRiGzRP0UYxg6CioDsd1LRXxhm1K1EcRbpjdOgkeJdhaEW3oI9hOEWzoKGhtRWyhiDX0S3CLbjzSgBr6C7ZQRBr6lugXTQsVaNhFglsapogzzObdCDZVhBk6Cjq1GDQqVJRhdwluaZIiyLBbwUaKGEOzchJs0AWjb3plmE+cBJ0T3OKcIsRQ2D5f/k/RSNA9RYShHgcQdFZEGIrLEIKuhQowVA7/6zaCjikCDB2KtJ2gmyLAsOIbu6egkyLA0DzWHEN7wY3iXR8MX8IJOqSIqNLqXoTCsx2kLkVAp4JehRSsVQR0tlU+s/mV6BfVhYroGDL2G7N/gluqUlwiur6k9fVFN4KVipDOPZXYBDso0S+shVpgGqFl+VNNVwlusaU4AXW1ibJbYpeCNsULVLu+Mp+BBcsVz3DN+kocProtO5+4o6+Lg9+4gM5GEK97A/2x6P42peTe+67LNXhGiRbT5e6332c6yMOiMsnF92j75SPDt85qka8X08UkEcEW8lBSvH1sfuNZmjitwSoPP3Pu329E7+0mhBBCCCGEEEIIIYQQMnRyLTHEeemtjHlajc4QjMbPGXwBcGVubEvnBuHqNsFO6VI1nVEhWAX4RmlFvx1+n0XwiTsdc7+FH1pTN4eqM5R2aWUPAaQjasNRmwKOGeRyk6+jCaZpZ21XVdS10AZlDgjR2tYG4RxwJupFTMP0LnyZ1vfqB2Uavv3S/IlqiOjVj2sIuNQM31BCxxRHzACzEWZRDQFdwqp24k5QIFNIHeYfBuMR0WRqW8UYAuCGn0QN8REzfMpLlkvHcIVaRVjGejR9hi2xa+KcimvgGsJyjX+R8f4AXSQ5Nyvs26himqHfCUvzcfZ5DqFYzicixirXuTQCg5Gx1yknhBBCCCGEEEIIIYQQQgghhBBCCCGEEEIIIYQQGH8BqD5K56tylYIAAAAASUVORK5CYII=" alt="Logo" style="width: 150px; margin-bottom: 20px;">
+        <img src="data:image/png;base64,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" alt="Logo" style="width: 150px; margin-bottom: 20px;">
         <h2>Acceso por Tienda</h2>
         <input type="text" id="storeCode" placeholder="Ejem: 404" maxlength="3">
         <br>
@@ -50,7 +51,7 @@
     </div>
 </div>
 
-<div id="loader">Procesando... por favor espere.</div>
+<div id="loader">Procesando información lograda...</div>
 
 <div id="mainContent">
     <header>
@@ -80,7 +81,7 @@
         <button onclick="procesarCruce()">Procesar Cruce</button>
         <button onclick="exportarResultado()">Exportar Resultado</button>
 
-        <input type="text" id="searchInput" placeholder="🔍 Buscar SKU o Producto..." onkeyup="buscarEnTabla()" style="display:none;">
+        <input type="text" id="searchInput" placeholder="🔍 Buscar SKU, Producto o Ubicación..." onkeyup="buscarEnTabla()" style="display:none;">
         <div id="resultado"></div>
 
         <hr />
@@ -145,7 +146,7 @@
         const pFile = document.getElementById("pistoleoFile").files[0];
         const wFile = document.getElementById("wmsFile").files[0];
         const rFile = document.getElementById("reservasFile").files[0];
-        if (!pFile || !wFile || !rFile) { alert("Sube los 3 archivos."); return; }
+        if (!pFile || !wFile || !rFile) { alert("Sube los 3 archivos para procesar."); return; }
 
         toggleLoader(true);
         leerArchivo(pFile, (pData) => {
@@ -159,7 +160,7 @@
 
                     const reservasMap = rData.reduce((acc, row) => {
                         const ubi = String(row["Ubicación Texto"] || row["Ubicacion Texto"] || row["Ubicacion"] || "").trim();
-                        acc[ubi] = { EL: row["Equipo Logístico"] || "N/A", TM: row["Tipo Mercadería"] || "Sin Clasificar" };
+                        acc[ubi] = { EL: row["Equipo Logístico"] || "N/A", TM: row["Tipo Mercadería"] || "N/A" };
                         return acc;
                     }, {});
 
@@ -173,14 +174,18 @@
                             const rawDate = w["Fecha de caducidad"] || w["Vencimiento"];
                             const fVence = parsearFechaHora(rawDate);
                             const ubiTxt = String(w["Ubicación"] || w["Ubicacion"] || "").trim();
-                            const res = reservasMap[ubiTxt] || {};
+                            const res = reservasMap[ubiTxt] || { EL: "N/A", TM: "N/A" };
 
                             if (fVence && fVence <= limiteVenc && fVence >= hoy) proximosAVencerCount++;
 
                             return {
-                                Ubi: ubiTxt, LPN: w["Número de LPN"] || "N/A", Stock: parseInt(w["Un Actual"] || 0),
+                                Ubi: ubiTxt,
+                                LPN: w["Número de LPN"] || "N/A",
+                                Stock: parseInt(w["Un Actual"] || 0),
                                 VenceObj: fVence,
-                                Jer: w["Jerarquía de artículo 2"] || "", EL: res.EL || "N/A", TM: res.TM || "N/A"
+                                Jer: w["Jerarquía de artículo 2"] || "",
+                                EL: res.EL,
+                                TM: res.TM
                             };
                         }).filter(w => w.Stock > 0).sort((a,b) => {
                             if (!a.VenceObj) return 1;
@@ -227,7 +232,8 @@
                         }
                     });
                     resultadoFiltrado = [...resultadoFinal];
-                    actualizarDashboard(); mostrarResultado();
+                    actualizarDashboard();
+                    mostrarResultado();
                     document.getElementById('searchInput').style.display = 'block';
                     toggleLoader(false);
                 });
@@ -245,25 +251,37 @@
 
     function mostrarResultado() {
         const div = document.getElementById("resultado");
-        if (resultadoFiltrado.length === 0) { div.innerHTML = "<p>Sin resultados.</p>"; return; }
+        if (resultadoFiltrado.length === 0) { div.innerHTML = "<p>Sin resultados disponibles.</p>"; return; }
 
-        let t = "<table><tr><th>Ubicación</th><th>LPN</th><th>SKU</th><th>PRODUCTO</th><th>Reponer</th><th>Días para Vencer</th><th>Fecha Vencimiento</th><th>Equipo</th></tr>";
+        let t = `<table>
+            <tr>
+                <th>Ubicación</th>
+                <th>LPN</th>
+                <th>SKU</th>
+                <th>PRODUCTO</th>
+                <th>Reponer</th>
+                <th>Días para Vencer</th>
+                <th>Fecha Vencimiento</th>
+                <th>Equipo</th>
+                <th>Tipo Mercadería</th>
+            </tr>`;
 
         resultadoFiltrado.forEach(p => {
-            let style = "";
-            if (p.Semaforo === "Rojo") style = "background-color: #ffcccc; color: #cc0000; font-weight: bold;";
-            else if (p.Semaforo === "Amarillo") style = "background-color: #fff4cc; color: #856404; font-weight: bold;";
-            else if (p.Semaforo === "Verde") style = "background-color: #ccffcc; color: #006600; font-weight: bold;";
+            let styleSemaforo = "text-align: center; font-weight: bold;";
+            if (p.Semaforo === "Rojo") styleSemaforo += " background-color: #ffcccc; color: #cc0000;";
+            else if (p.Semaforo === "Amarillo") styleSemaforo += " background-color: #fff4cc; color: #856404;";
+            else if (p.Semaforo === "Verde") styleSemaforo += " background-color: #ccffcc; color: #006600;";
 
             t += `<tr>
-                <td>${p.Ubicacion}</td>
-                <td>${p["Número de LPN"]}</td>
+                <td>${p.Ubicacion || "N/A"}</td>
+                <td>${p["Número de LPN"] || "N/A"}</td>
                 <td>${p.SKU}</td>
                 <td>${p.PRODUCTO}</td>
-                <td>${p["A Reponer"]}</td>
-                <td style="${style} text-align: center;">${p["Días para Vencer"]}</td>
+                <td style="font-weight: bold; text-align: center;">${p["A Reponer"]}</td>
+                <td style="${styleSemaforo}">${p["Días para Vencer"]}</td>
                 <td>${p["Fecha Vencimiento"]}</td>
-                <td>${p["Equipo Logístico"]}</td>
+                <td>${p["Equipo Logístico"] || "N/A"}</td>
+                <td>${p["Tipo Mercadería"] || "N/A"}</td>
             </tr>`;
         });
         div.innerHTML = t + "</table>";
@@ -287,7 +305,8 @@
                 if (rvF) {
                     leerArchivo(rvF, (rvData) => {
                         const rMap = rvData.reduce((acc, row) => {
-                            acc[String(row["Ubicación Texto"] || "").trim()] = { EL: row["Equipo Logístico"], TM: row["Tipo Mercadería"] };
+                            const u = String(row["Ubicación Texto"] || row["Ubicacion"] || "").trim();
+                            acc[u] = { EL: row["Equipo Logístico"], TM: row["Tipo Mercadería"] };
                             return acc;
                         }, {});
                         procesarSeguimientoFinal(resData, movimientos, rMap);
@@ -313,20 +332,20 @@
                     el = rMap[item.Ubicacion].EL || el;
                     tm = rMap[item.Ubicacion].TM || tm;
                 }
-                faltantes.push({ ...item, Repuesto: repuesto, "Equipo Logístico": el, "Tipo Mercadería": tm });
+                faltantes.push({ ...item, Repuesto: repuesto, "Pendiente": solicitado - repuesto });
             }
         });
 
         const div = document.getElementById("resultadoSeguimiento");
         const btn = document.getElementById("exportarSeguimientoBtn");
         if (faltantes.length === 0) {
-            div.innerHTML = "<p>✅ Todo repuesto correctamente.</p>";
+            div.innerHTML = "<p style='color: green; font-weight: bold;'>✅ Todo repuesto correctamente.</p>";
             btn.disabled = true;
         } else {
             btn.disabled = false;
-            let t = "<h3>Pendientes:</h3><table><tr><th>Ubicación</th><th>SKU</th><th>PRODUCTO</th><th>Solicitado</th><th>Repuesto</th><th>Equipo</th></tr>";
+            let t = "<h3>Pendientes de Reposición:</h3><table><tr><th>Ubicación</th><th>SKU</th><th>PRODUCTO</th><th>Solicitado</th><th>Repuesto</th><th>Pendiente</th></tr>";
             faltantes.forEach(f => {
-                t += `<tr><td>${f.Ubicacion}</td><td>${f.SKU}</td><td>${f.PRODUCTO}</td><td>${f["A Reponer"]}</td><td>${f.Repuesto}</td><td>${f["Equipo Logístico"]}</td></tr>`;
+                t += `<tr><td>${f.Ubicacion}</td><td>${f.SKU}</td><td>${f.PRODUCTO}</td><td>${f["A Reponer"]}</td><td>${f.Repuesto}</td><td style='color:red; font-weight:bold;'>${f.Pendiente}</td></tr>`;
             });
             div.innerHTML = t + "</table>";
         }
@@ -334,7 +353,6 @@
     }
 
     function exportarResultado() {
-        // Quitamos la propiedad interna 'Semaforo' antes de exportar
         const dataParaExcel = resultadoFiltrado.map(({Semaforo, ...resto}) => resto);
         const ws = XLSX.utils.json_to_sheet(dataParaExcel);
         const wb = XLSX.utils.book_new();
@@ -362,7 +380,7 @@
 
     function buscarEnTabla() {
         const bus = document.getElementById('searchInput').value.toUpperCase();
-        const filas = document.querySelector("#resultado table").getElementsByTagName("tr");
+        const filas = document.querySelectorAll("#resultado table tr");
         for (let i = 1; i < filas.length; i++) {
             filas[i].style.display = filas[i].textContent.toUpperCase().includes(bus) ? "" : "none";
         }
