@@ -3,525 +3,369 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cruce y Reposición - Final</title>
+    <title>Cruce y Reposición - Sistema Integral</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        body {
-          font-family: Arial, sans-serif;
-          background-color: #f4f4f4;
-          margin: 0;
-          padding: 0;
-          min-height: 100vh;
-          display: flex;
-          flex-direction: column;
-        }
-        header {
-          background-color: #f57c00;
-          color: white;
-          padding: 20px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-        header h1 {
-          margin: 0;
-          font-size: 24px;
-        }
-        .div-buttons {
-          display: flex;
-          gap: 10px;
-        }
-        .div-buttons button {
-          background-color: white;
-          color: #c8102e;
-          border: 2px solid #c8102e;
-          padding: 8px 12px;
-          cursor: pointer;
-          border-radius: 4px;
-        }
-        .container {
-          padding: 20px;
-          flex-grow: 1;
-        }
-        input[type="file"] {
-          display: block;
-          margin: 10px 0 20px 0;
-        }
-        button {
-          margin: 10px 5px;
-          padding: 10px 15px;
-          background-color: #c8102e;
-          color: white;
-          border: none;
-          border-radius: 5px;
-          cursor: pointer;
-        }
-        button:hover {
-          background-color: #e65100;
-        }
-        /* Estilos modificados para los contenedores de las tablas */
-        #resultado,
-        #resultadoSeguimiento {
-          max-height: 400px; /* Altura máxima del contenedor */
-          overflow-y: auto; /* Permite desplazamiento vertical */
-          margin-top: 20px;
-        }
-        table {
-          width: 100%;
-          border-collapse: collapse;
-          background-color: white;
-          font-size: 0.85em; /* Ajuste para tablas con más columnas */
-        }
-        table,
-        th,
-        td {
-          border: 1px solid #ddd;
-        }
-        th,
-        td {
-          padding: 8px;
-          text-align: left;
-        }
-        th {
-          background-color: #c8102e;
-          color: white;
-          position: sticky; /* Cabecera fija */
-          top: 0;
-          z-index: 1;
-        }
-        footer {
-          background-color: #333;
-          color: white;
-          text-align: center;
-          padding: 10px;
-          margin-top: auto;
-        }
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; }
+        header { background-color: #f57c00; color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        header h1 { margin: 0; font-size: 24px; }
+        .div-buttons { display: flex; gap: 10px; }
+        .div-buttons button { background-color: white; color: #c8102e; border: 2px solid #c8102e; padding: 8px 12px; cursor: pointer; border-radius: 4px; }
+        .container { padding: 20px; flex-grow: 1; }
+        input[type="file"] { display: block; margin: 10px 0 20px 0; }
+        button { margin: 10px 5px; padding: 10px 15px; background-color: #c8102e; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background-color: #e65100; }
+
+        /* DASHBOARD */
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center; border-top: 4px solid #c8102e; }
+        .card span { font-size: 1.5em; font-weight: bold; color: #c8102e; }
+        #statVencimiento { color: #f57c00; }
+
+        #searchInput { padding: 10px; width: 100%; max-width: 300px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        #loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 1000; justify-content: center; align-items: center; font-weight: bold; }
+        #resultado, #resultadoSeguimiento { max-height: 400px; overflow-y: auto; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; background-color: white; font-size: 0.85em; }
+        table, th, td { border: 1px solid #ddd; }
+        th, td { padding: 8px; text-align: left; }
+        th { background-color: #c8102e; color: white; position: sticky; top: 0; z-index: 1; }
+        footer { background-color: #333; color: white; text-align: center; padding: 10px; margin-top: auto; }
+
+        /* LOGIN */
+        #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTW-MJHw3jB2gHOcmHEgPiDfwaNlRybDB5Luw&s'); background-size: cover; background-position: center; display: flex; justify-content: center; align-items: center; z-index: 2000; color: white; }
+        .login-box { background: white; color: #333; padding: 40px; border-radius: 10px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .login-box input { padding: 10px; width: 80%; margin: 20px 0; border: 1px solid #ccc; border-radius: 5px; font-size: 1.2em; text-align: center; }
+        #mainContent { display: none; }
     </style>
 </head>
 <body>
-<header>
-    <h1>Gestión de Reposición de Mercadería</h1>
-    <div class="div-buttons">
-        <button onclick="filtrarDiv('DIV 01')">Div 01</button>
-        <button onclick="filtrarDiv('DIV 02')">Div 02</button>
-        <button onclick="filtrarDiv('DIV 03')">Div 03</button>
-        <button onclick="filtrarDiv('DIV 04')">Div 04</button>
-        <button onclick="filtrarDiv('TODOS')">Mostrar Todos</button>
+
+<div id="loginScreen">
+    <div class="login-box">
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAgVBMVEX/gQD/////dgD/egD/07X/+PT/fwD/fQD/dQD/fgD/wp3/eAD/8+r///3/9e3/jS3/zqz/kTj/uon/zKn/kjv/t4L/nVP/s37/iiL/28P/oVv/1rn/u4z/lkL/yqX/sHn/59X/v5T/3sj/qmz/iBr/7d//sXP/mUr/pmT/4ND/6dq+7KlsAAAEf0lEQVR4nO2ca1ejMBRFIdEEjGKt2qpT+/Axdfz/P3DasS6nLYFAyAllnf0VlmV7Lo/ATZKEEEIIIYQQQgghhBBCCCGEEEIIIYQQQkKgtBFZlgmjVexDCYIyb6vleZqmxcu9kgN0lA+P6Q8jpWMfUNdk9+keV08m9iF1S3aWHjIWsQ+qS7JfR4JpOhuQYqngkFK0CA4nxZJzcFgpVggOQ7FScAiKNYKnr1greOqKDoKnregkeMqKjoJpem9XVHpD3tORiLOgNUUlzfXreLWY5KaPQ5EGguWKyjyMit325avI8QrVNBIsK9Rc7v2Fy0nPhlsNBY9T1DfnB3vMszgq5TQWPFTUz8d7/OrRNbeF4H6hqreyPea9UWwluKco3kv3eOrJ5aal4H+Kelq+Q9GPELNRS8EfxezwKvPNog/3xdYJ/ijmT7btnz0I0UtwpyjtVZBEf4DzKNEfRct1ZstH7GuNZ4I7RXFl3TqOfCJ6J7hlKqR944U8fcGNYtZXw44E0/S3vUqjGnYmWEVMQzfB9xt7Pj03dBO8lPLaSzGeoaNgrhLtpRjN0F0w8VOMZegouOtQ8FGMZNgkQU/FOIZNBX0Uoxg2K1FPxRiGzRP0UYxg6CioDsd1LRXxhm1K1EcRbpjdOgkeJdhaEW3oI9hOEWzoKGhtRWyhiDX0S3CLbjzSgBr6C7ZQRBr6lugXTQsVaNhFglsapogzzObdCDZVhBk6Cjq1GDQqVJRhdwluaZIiyLBbwUaKGEOzchJs0AWjb3plmE+cBJ0T3OKcIsRQ2D5f/k/RSNA9RYShHgcQdFZEGIrLEIKuhQowVA7/6zaCjikCDB2KtJ2gmyLAsOIbu6egkyLA0DzWHEN7wY3iXR8MX8IJOqSIqNLqXoTCsx2kLkVAp4JehRSsVQR0tlU+s/mV6BfVhYroGDL2G7N/gluqUlwiur6k9fVFN4KVipDOPZXYBDso0S+shVpgGqFl+VNNVwlusaU4AXW1ibJbYpeCNsULVLu+Mp+BBcsVz3DN+kocProtO5+4o6+Lg9+4gM5GEK97A/2x6P42peTe+67LNXhGiRbT5e6332c6yMOiMsnF92j75SPDt85qka8X08UkEcEW8lBSvH1sfuNZmjitwSoPP3Pu329E7+0mhBBCCCGEEEIIIYQQMnRyLTHEeemtjHlajc4QjMbPGXwBcGVubEvnBuHqNsFO6VI1nVEhWAX4RmlFvx1+n0XwiTsdc7+FH1pTN4eqM5R2aWUPAaQjasNRmwKOGeRyk6+jCaZpZ21XVdS10AZlDgjR2tYG4RxwJupFTMP0LnyZ1vfqB2Uavv3S/IlqiOjVj2sIuNQM31BCxxRHzACzEWZRDQFdwqp24k5QIFNIHeYfBuMR0WRqW8UYAuCGn0QN8REzfMpLlkvHcIVaRVjGejR9hi2xa+KcimvgGsJyjX+R8f4AXSQ5Nyvs26himqHfCUvzcfZ5DqFYzicixirXuTQCg5Gx1yknhBBCCCGEEEIIIYQQQgghhBBCCCGEEEIIIYQQGH8BqD5K56tylYIAAAAASUVORK5CYII=" alt="Logo" style="width: 150px; margin-bottom: 20px;">
+        <h2>Acceso por Tienda</h2>
+        <input type="text" id="storeCode" placeholder="Ejem: 404" maxlength="3">
+        <br>
+        <button onclick="validarAcceso()" style="width: 85%;">Ingresar</button>
     </div>
-</header>
-
-<div class="container">
-    <h2>Cargar archivos para cruce (Generación de Reposición)</h2>
-    <label><strong>Archivo de Pistoleo (Reposición):</strong></label>
-    <input type="file" id="pistoleoFile" accept=".xlsx, .csv" />
-
-    <label><strong>Archivo del WMS (Stock Ubicaciones):</strong></label>
-    <input type="file" id="wmsFile" accept=".xlsx, .csv" />
-
-    <label><strong>Archivo Ubicaciones Tipo Reserva:</strong></label>
-    <input type="file" id="reservasFile" accept=".xlsx, .csv" />
-
-    <button onclick="procesarCruce()">Procesar Cruce</button>
-    <button onclick="exportarResultado()">Exportar Resultado a Excel</button>
-
-    <div id="resultado"></div>
-
-    <hr />
-    <h2>Verificar Reposición Realizada (Seguimiento)</h2>
-    <label><strong>Archivo de Resultado del Cruce:</strong></label>
-    <input type="file" id="resultadoFile" accept=".xlsx, .csv" />
-
-    <label><strong>Archivo Detalle Reposición WMS:</strong></label>
-    <input type="file" id="detalleFile" accept=".xlsx, .csv" />
-
-    <label><strong>Archivo Ubicaciones Tipo Reserva (Verificación):</strong></label>
-    <input type="file" id="reservasFileVerificacion" accept=".xlsx, .csv" />
-
-    <button onclick="verificarReposicion()">Verificar Reposición</button>
-    <button
-            onclick="exportarSeguimiento()"
-            disabled
-            id="exportarSeguimientoBtn"
-    >
-        Exportar Seguimiento a Excel
-    </button>
-
-    <div id="resultadoSeguimiento"></div>
 </div>
 
-<footer>PROMART HOMECENTERS</footer>
+<div id="loader">Procesando... por favor espere.</div>
+
+<div id="mainContent">
+    <header>
+        <h1 id="mainTitle">Gestión de Reposición</h1>
+        <div class="div-buttons">
+            <button onclick="filtrarDiv('DIV 01')">Div 01</button>
+            <button onclick="filtrarDiv('DIV 02')">Div 02</button>
+            <button onclick="filtrarDiv('DIV 03')">Div 03</button>
+            <button onclick="filtrarDiv('DIV 04')">Div 04</button>
+            <button onclick="filtrarDiv('TODOS')">Mostrar Todos</button>
+            <button onclick="location.reload()" style="border-color: #333; color: #333;">Cambiar Tienda</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div id="resumenCruce" class="dashboard" style="display:none;">
+            <div class="card">Total SKUs <br><span id="statSkus">0</span></div>
+            <div class="card">Unidades Reponer <br><span id="statUnidades">0</span></div>
+            <div class="card">Próximos a Vencer <br><span id="statVencimiento">0</span></div>
+            <div class="card">Alertas (Sin Stock) <br><span id="statAlertas">0</span></div>
+        </div>
+
+        <h2>1. Generar Reposición (Cruce)</h2>
+        <label>Pistoleo (Reposición): <input type="file" id="pistoleoFile" accept=".xlsx, .csv" /></label>
+        <label>WMS (Stock Ubicaciones): <input type="file" id="wmsFile" accept=".xlsx, .csv" /></label>
+        <label>Ubicaciones Reserva: <input type="file" id="reservasFile" accept=".xlsx, .csv" /></label>
+        <button onclick="procesarCruce()">Procesar Cruce</button>
+        <button onclick="exportarResultado()">Exportar Resultado</button>
+
+        <input type="text" id="searchInput" placeholder="🔍 Buscar SKU o Producto..." onkeyup="buscarEnTabla()" style="display:none;">
+        <div id="resultado"></div>
+
+        <hr />
+        <h2>2. Verificar Reposición Realizada (Seguimiento)</h2>
+        <label>Resultado del Cruce: <input type="file" id="resultadoFile" accept=".xlsx, .csv" /></label>
+        <label>Detalle Reposición WMS: <input type="file" id="detalleFile" accept=".xlsx, .csv" /></label>
+        <label>Ubicaciones Reserva (Verificación): <input type="file" id="reservasFileVerificacion" accept=".xlsx, .csv" /></label>
+        <button onclick="verificarReposicion()">Verificar Reposición</button>
+        <button onclick="exportarSeguimiento()" disabled id="exportarSeguimientoBtn">Exportar Seguimiento</button>
+        <div id="resultadoSeguimiento"></div>
+    </div>
+    <footer>PROMART HOMECENTERS</footer>
+</div>
 
 <script>
+    const sedes = { "401": "401 Pucallpa", "404": "404 Tarapoto", "405": "405 Tarapoto 2" };
+    function validarAcceso() {
+        const codigo = document.getElementById("storeCode").value.trim();
+        if (sedes[codigo]) {
+            document.getElementById("mainTitle").innerText = "Gestión de Reposición - " + sedes[codigo];
+            document.getElementById("loginScreen").style.display = "none";
+            document.getElementById("mainContent").style.display = "block";
+        } else { alert("Código incorrecto."); }
+    }
+
     let resultadoFinal = [];
     let resultadoFiltrado = [];
     let faltantes = [];
+    let alertasCruce = 0;
+    let proximosAVencerCount = 0;
 
-    /**
-     * Lee un archivo de Excel/CSV y lo convierte a JSON.
-     */
+    function toggleLoader(show) { document.getElementById('loader').style.display = show ? 'flex' : 'none'; }
+
     function leerArchivo(file, callback) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const workbook = XLSX.read(e.target.result, { type: "binary" });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        callback(XLSX.utils.sheet_to_json(sheet, { defval: "" }));
-      };
-      reader.readAsBinaryString(file);
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const workbook = XLSX.read(e.target.result, { type: "binary" });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            callback(XLSX.utils.sheet_to_json(sheet, { defval: "" }));
+        };
+        reader.readAsBinaryString(file);
     }
 
-    // ----------------------------------------------------------------------
-    // LÓGICA DE CRUCE (Generación de Reposición)
-    // ----------------------------------------------------------------------
+    function parsearFechaHora(valor) {
+        if (!valor || valor === "N/A" || valor === "") return null;
+        if (!isNaN(valor)) {
+            const date = new Date((valor - 25569) * 86400 * 1000);
+            return isNaN(date.getTime()) ? null : date;
+        }
+        try {
+            const parts = String(valor).trim().split(' ');
+            const dateParts = parts[0].split('/');
+            if(dateParts.length === 3) {
+                const d = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+                return isNaN(d.getTime()) ? null : d;
+            }
+            return null;
+        } catch (e) { return null; }
+    }
 
     function procesarCruce() {
-      const pistoleoFile = document.getElementById("pistoleoFile").files[0];
-      const wmsFile = document.getElementById("wmsFile").files[0];
-      const reservasFile = document.getElementById("reservasFile").files[0];
+        const pFile = document.getElementById("pistoleoFile").files[0];
+        const wFile = document.getElementById("wmsFile").files[0];
+        const rFile = document.getElementById("reservasFile").files[0];
+        if (!pFile || !wFile || !rFile) { alert("Sube los 3 archivos."); return; }
 
-      if (!pistoleoFile || !wmsFile || !reservasFile) {
-        alert("Por favor selecciona los tres archivos: Pistoleo, WMS y Ubicaciones Reserva.");
-        return;
-      }
+        toggleLoader(true);
+        leerArchivo(pFile, (pData) => {
+            leerArchivo(wFile, (wData) => {
+                leerArchivo(rFile, (rData) => {
+                    resultadoFinal = [];
+                    alertasCruce = 0;
+                    proximosAVencerCount = 0;
+                    const hoy = new Date(); hoy.setHours(0,0,0,0);
+                    const limiteVenc = new Date(); limiteVenc.setDate(hoy.getDate() + 30);
 
-      leerArchivo(pistoleoFile, (pistoleoData) => {
-        leerArchivo(wmsFile, (wmsData) => {
-          leerArchivo(reservasFile, (reservasData) => {
-            resultadoFinal = [];
+                    const reservasMap = rData.reduce((acc, row) => {
+                        const ubi = String(row["Ubicación Texto"] || row["Ubicacion Texto"] || row["Ubicacion"] || "").trim();
+                        acc[ubi] = { EL: row["Equipo Logístico"] || "N/A", TM: row["Tipo Mercadería"] || "Sin Clasificar" };
+                        return acc;
+                    }, {});
 
-            // Mapear los datos de Ubicaciones Tipo Reserva para un acceso rápido (Ubicación -> {Equipo, Tipo Mercadería})
-            const reservasMap = reservasData.reduce((acc, row) => {
-              const ubicacion = String(
-                row["Ubicación Texto"] || row["Ubicacion Texto"] || row["Ubicacion"] || ""
-              ).trim();
-              const equipoLogistico =
-                row["Equipo Logístico"] || row["Equipo Logistico"] || "No Asignado";
-              // --- NUEVO: Captura Tipo Mercadería ---
-              const tipoMercaderia =
-                row["Tipo Mercadería"] || row["Tipo Mercaderia"] || "Sin Clasificar";
+                    pData.forEach((p) => {
+                        const sku = String(p.SKU || p["Sku"] || "").trim();
+                        const qty = parseInt(p.QUANTITY || p["Cantidad"] || 0);
+                        const prod = p.PRODUCTO || p["Descripción"] || "Sin nombre";
 
-              if (ubicacion) {
-                acc[ubicacion] = {
-                  EquipoLogistico: equipoLogistico,
-                  TipoMercaderia: tipoMercaderia,
-                };
-              }
-              return acc;
-            }, {});
+                        const ubicSKU = wData.filter(w => String(w.SKU || w["Sku"] || "").trim() === sku)
+                        .map(w => {
+                            const rawDate = w["Fecha de caducidad"] || w["Vencimiento"];
+                            const fVence = parsearFechaHora(rawDate);
+                            const ubiTxt = String(w["Ubicación"] || w["Ubicacion"] || "").trim();
+                            const res = reservasMap[ubiTxt] || {};
 
-            // Lógica de Cruce
-            pistoleoData.forEach((p) => {
-              const sku = String(p.SKU || p["Sku"] || p["sku"]).trim();
-              const quantity = parseInt(p.QUANTITY || p["Cantidad"] || 0);
-              const producto = p.PRODUCTO || p["Descripción"] || "Sin nombre";
+                            if (fVence && fVence <= limiteVenc && fVence >= hoy) proximosAVencerCount++;
 
-              const ubicacionesSKU = wmsData
-                .filter(
-                  (w) => String(w.SKU || w["Sku"] || w["sku"]).trim() === sku
-                )
-                .map((w) => {
-                  const ubicacionText = String(
-                    w["Ubicación"] || w["Ubicacion"] || "No encontrada"
-                  ).trim();
+                            return {
+                                Ubi: ubiTxt, LPN: w["Número de LPN"] || "N/A", Stock: parseInt(w["Un Actual"] || 0),
+                                VenceObj: fVence,
+                                Jer: w["Jerarquía de artículo 2"] || "", EL: res.EL || "N/A", TM: res.TM || "N/A"
+                            };
+                        }).filter(w => w.Stock > 0).sort((a,b) => {
+                            if (!a.VenceObj) return 1;
+                            if (!b.VenceObj) return -1;
+                            return a.VenceObj - b.VenceObj;
+                        });
 
-                  const reservaInfo = reservasMap[ubicacionText] || {};
+                        if (ubicSKU.length === 0) alertasCruce++;
 
-                  return {
-                    Ubicacion: ubicacionText,
-                    LPN:
-                      w["Número de LPN"] ||
-                      w["Núm. de LPN"] ||
-                      w.LPN ||
-                      "No asignado",
-                    Pale:
-                      w["Número de Pale"] ||
-                      w["Num. Pale"] ||
-                      w["Pale"] ||
-                      "Sin pale",
-                    Stock: parseInt(w["Un Actual"] || w["Stock"] || 0),
-                    Jerarquia: w["Jerarquía de artículo 2"] || "",
-                    // Cruce con mapa de reservas
-                    EquipoLogistico: reservaInfo.EquipoLogistico || "PENDIENTE CRUCE",
-                    TipoMercaderia: reservaInfo.TipoMercaderia || "PENDIENTE CRUCE", // NUEVO
-                  };
-                })
-                .filter((w) => w.Stock > 0)
-                .sort((a, b) => b.Stock - a.Stock);
+                        let resto = qty;
+                        for (const u of ubicSKU) {
+                            if (resto <= 0) break;
+                            const can = Math.min(u.Stock, resto);
 
-              let restante = quantity;
+                            let diasRestantes = "N/A";
+                            let fechaFinalTxt = "N/A";
+                            let semaforo = "";
 
-              for (const ubic of ubicacionesSKU) {
-                if (restante <= 0) break;
+                            if (u.VenceObj) {
+                                const diff = u.VenceObj.getTime() - hoy.getTime();
+                                diasRestantes = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                                fechaFinalTxt = u.VenceObj.toLocaleDateString('es-ES', {day: '2-digit', month: '2-digit', year: 'numeric'});
 
-                const cantidadAReponer = Math.min(ubic.Stock, restante);
+                                if (diasRestantes <= 7) semaforo = "Rojo";
+                                else if (diasRestantes <= 30) semaforo = "Amarillo";
+                                else semaforo = "Verde";
+                            }
 
-                resultadoFinal.push({
-                  Ubicacion: ubic.Ubicacion,
-                  "Número de LPN": ubic.LPN,
-                  SKU: sku,
-                  PRODUCTO: producto,
-                  "Un Actual": ubic.Stock,
-                  "A Reponer": cantidadAReponer,
-                  Jerarquía: ubic.Jerarquia,
-                  "Número de Pale": ubic.Pale,
-                  "Equipo Logístico": ubic.EquipoLogistico,
-                  "Tipo Mercadería": ubic.TipoMercaderia, // NUEVO
+                            resultadoFinal.push({
+                                Ubicacion: u.Ubi,
+                                "Número de LPN": u.LPN,
+                                SKU: sku,
+                                PRODUCTO: prod,
+                                "Un Actual": u.Stock,
+                                "A Reponer": can,
+                                "Días para Vencer": diasRestantes,
+                                "Fecha Vencimiento": fechaFinalTxt,
+                                "Semaforo": semaforo,
+                                Jerarquía: u.Jer,
+                                "Equipo Logístico": u.EL,
+                                "Tipo Mercadería": u.TM
+                            });
+                            resto -= can;
+                        }
+                    });
+                    resultadoFiltrado = [...resultadoFinal];
+                    actualizarDashboard(); mostrarResultado();
+                    document.getElementById('searchInput').style.display = 'block';
+                    toggleLoader(false);
                 });
-
-                restante -= cantidadAReponer;
-              }
             });
-
-            resultadoFiltrado = [...resultadoFinal];
-            mostrarResultado();
-          });
         });
-      });
     }
 
-    function filtrarDiv(div) {
-      const filtros = {
-        "DIV 01": ["HERRAMIENTAS", "FERRETERIA", "MATERIALES DE CONTRUCCION"],
-        "DIV 02": [
-          "PISOS Y REVESTIMIENTOS",
-          "ELECTRO HOGAR",
-          "PINTURAS",
-          "BANOS",
-        ],
-        "DIV 03": ["ELECTRICIDAD", "GASFITERIA", "ILUMINACION"],
-        "DIV 04": [
-          "AIRE LIBRE Y TEMPORADA",
-          "JARDIN",
-          "LIMPIEZA",
-          "MUEBLES",
-          "ORGANIZACION Y DECORACION",
-        ],
-      };
-      if (div === "TODOS") {
-        resultadoFiltrado = [...resultadoFinal];
-      } else if (filtros[div]) {
-        resultadoFiltrado = resultadoFinal.filter((p) =>
-          filtros[div].includes((p["Jerarquía"] || "").toUpperCase())
-        );
-      }
-      mostrarResultado();
+    function actualizarDashboard() {
+        document.getElementById('resumenCruce').style.display = 'grid';
+        document.getElementById('statSkus').innerText = [...new Set(resultadoFiltrado.map(p => p.SKU))].length;
+        document.getElementById('statUnidades').innerText = resultadoFiltrado.reduce((acc, p) => acc + p["A Reponer"], 0);
+        document.getElementById('statVencimiento').innerText = proximosAVencerCount;
+        document.getElementById('statAlertas').innerText = alertasCruce;
     }
 
     function mostrarResultado() {
-      const div = document.getElementById("resultado");
-      div.innerHTML = "";
-      if (resultadoFiltrado.length === 0) {
-        div.innerHTML =
-          "<p>No hay productos con stock disponible para reposición.</p>";
-        return;
-      }
-      // Incluye Tipo Mercadería en la tabla de cruce
-      let tabla =
-        "<table><tr><th>Ubicación</th><th>LPN</th><th>Pale</th><th>SKU</th><th>PRODUCTO</th><th>Un Actual</th><th>A Reponer</th><th>Jerarquía</th><th>Equipo Logístico</th><th>Tipo Mercadería</th></tr>";
-      resultadoFiltrado.forEach((p) => {
-        tabla += `<tr>
-                  <td>${p.Ubicacion}</td>
-                  <td>${p["Número de LPN"]}</td>
-                  <td>${p["Número de Pale"]}</td>
-                  <td>${p.SKU}</td>
-                  <td>${p.PRODUCTO}</td>
-                  <td>${p["Un Actual"]}</td>
-                  <td>${p["A Reponer"]}</td>
-                  <td>${p.Jerarquía}</td>
-                  <td>${p["Equipo Logístico"]}</td>
-                  <td>${p["Tipo Mercadería"]}</td>
-                </tr>`;
-      });
-      tabla += "</table>";
-      div.innerHTML = tabla;
-    }
+        const div = document.getElementById("resultado");
+        if (resultadoFiltrado.length === 0) { div.innerHTML = "<p>Sin resultados.</p>"; return; }
 
-    function exportarResultado() {
-      if (resultadoFiltrado.length === 0) {
-        alert("No hay resultados para exportar.");
-        return;
-      }
-      // Incluye Tipo Mercadería en la exportación
-      const datosExportar = resultadoFiltrado.map((p) => ({
-        Ubicacion: p.Ubicacion,
-        "Número de LPN": p["Número de LPN"],
-        "Número de Pale": p["Número de Pale"],
-        SKU: p.SKU,
-        PRODUCTO: p.PRODUCTO,
-        "Un Actual": p["Un Actual"],
-        "A Reponer": p["A Reponer"],
-        Jerarquía: p.Jerarquía,
-        "Equipo Logístico": p["Equipo Logístico"],
-        "Tipo Mercadería": p["Tipo Mercadería"], // NUEVO
-      }));
-      const ws = XLSX.utils.json_to_sheet(datosExportar);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Cruce Reposición");
-      XLSX.writeFile(wb, "resultado_cruce_generado.xlsx");
-    }
+        let t = "<table><tr><th>Ubicación</th><th>LPN</th><th>SKU</th><th>PRODUCTO</th><th>Reponer</th><th>Días para Vencer</th><th>Fecha Vencimiento</th><th>Equipo</th></tr>";
 
-    // ----------------------------------------------------------------------
-    // LÓGICA DE VERIFICACIÓN (Seguimiento)
-    // ----------------------------------------------------------------------
+        resultadoFiltrado.forEach(p => {
+            let style = "";
+            if (p.Semaforo === "Rojo") style = "background-color: #ffcccc; color: #cc0000; font-weight: bold;";
+            else if (p.Semaforo === "Amarillo") style = "background-color: #fff4cc; color: #856404; font-weight: bold;";
+            else if (p.Semaforo === "Verde") style = "background-color: #ccffcc; color: #006600; font-weight: bold;";
+
+            t += `<tr>
+                <td>${p.Ubicacion}</td>
+                <td>${p["Número de LPN"]}</td>
+                <td>${p.SKU}</td>
+                <td>${p.PRODUCTO}</td>
+                <td>${p["A Reponer"]}</td>
+                <td style="${style} text-align: center;">${p["Días para Vencer"]}</td>
+                <td>${p["Fecha Vencimiento"]}</td>
+                <td>${p["Equipo Logístico"]}</td>
+            </tr>`;
+        });
+        div.innerHTML = t + "</table>";
+    }
 
     function verificarReposicion() {
-      const resultadoFile = document.getElementById("resultadoFile").files[0];
-      const detalleFile = document.getElementById("detalleFile").files[0];
-      const reservasFile = document.getElementById("reservasFileVerificacion").files[0];
+        const resF = document.getElementById("resultadoFile").files[0];
+        const detF = document.getElementById("detalleFile").files[0];
+        const rvF = document.getElementById("reservasFileVerificacion").files[0];
+        if (!resF || !detF) { alert("Sube los archivos necesarios."); return; }
 
-      if (!resultadoFile || !detalleFile) {
-        alert("Por favor selecciona el Archivo de Resultado del Cruce y el Archivo Detalle Reposición WMS.");
-        return;
-      }
+        toggleLoader(true);
+        leerArchivo(resF, (resData) => {
+            leerArchivo(detF, (detData) => {
+                const movimientos = detData.reduce((acc, cur) => {
+                    const sku = String(cur.SKU || cur["Sku"] || "").trim();
+                    acc[sku] = (acc[sku] || 0) + parseInt(cur["Cantidad Ajustada"] || cur["Cantidad"] || 0);
+                    return acc;
+                }, {});
 
-      // Función para procesar y mostrar el resultado
-      const procesarVerificacion = (resultadoData, detalleData, reservasMap) => {
-           const movimientos = detalleData.reduce((acc, cur) => {
-            const sku = String(cur.SKU || cur["Sku"] || cur["sku"]).trim();
-            const ajuste = parseInt(
-              cur["Cantidad Ajustada"] || cur["Cantidad"] || 0
-            );
-            if (!acc[sku]) acc[sku] = 0;
-            acc[sku] += ajuste;
-            return acc;
-          }, {});
+                if (rvF) {
+                    leerArchivo(rvF, (rvData) => {
+                        const rMap = rvData.reduce((acc, row) => {
+                            acc[String(row["Ubicación Texto"] || "").trim()] = { EL: row["Equipo Logístico"], TM: row["Tipo Mercadería"] };
+                            return acc;
+                        }, {});
+                        procesarSeguimientoFinal(resData, movimientos, rMap);
+                    });
+                } else {
+                    procesarSeguimientoFinal(resData, movimientos, null);
+                }
+            });
+        });
+    }
 
-          faltantes = [];
-          resultadoData.forEach((item) => {
-            const sku = String(item.SKU || item["Sku"] || item["sku"]).trim();
-            const solicitado = parseInt(
-              item["A Reponer"] || item["Cantidad"] || 0
-            );
+    function procesarSeguimientoFinal(resData, movimientos, rMap) {
+        faltantes = [];
+        resData.forEach(item => {
+            const sku = String(item.SKU || "").trim();
+            const solicitado = parseInt(item["A Reponer"] || 0);
             const repuesto = Math.abs(movimientos[sku] || 0);
 
             if (repuesto < solicitado) {
-
-              let equipoLogistico = item["Equipo Logístico"] || "N/A";
-              let tipoMercaderia = item["Tipo Mercadería"] || "N/A"; // Captura inicial
-
-              // Si el Equipo Logístico o Tipo Mercadería no existe en el archivo de resultado,
-              // y tenemos el mapa de reservas, intentamos cruzarlo.
-              if (reservasMap) {
-                  const ubicacionText = String(item.Ubicacion || "").trim();
-                  const reservaInfo = reservasMap[ubicacionText];
-
-                  if (reservaInfo) {
-                      if (equipoLogistico === "N/A" || equipoLogistico === "PENDIENTE CRUCE") {
-                          equipoLogistico = reservaInfo.EquipoLogistico || "PENDIENTE CRUCE";
-                      }
-                      // Forzar el cruce de Tipo Mercadería si no estaba en el archivo de resultado
-                      if (tipoMercaderia === "N/A" || tipoMercaderia === "PENDIENTE CRUCE") {
-                          tipoMercaderia = reservaInfo.TipoMercaderia || "PENDIENTE CRUCE";
-                      }
-                  } else {
-                       // Si no se encuentra en el mapa de reservas
-                       if (equipoLogistico === "N/A") equipoLogistico = "PENDIENTE CRUCE";
-                       if (tipoMercaderia === "N/A") tipoMercaderia = "PENDIENTE CRUCE";
-                  }
-              }
-
-              faltantes.push({
-                Ubicacion: item.Ubicacion,
-                "Número de LPN": item["Número de LPN"],
-                SKU: sku,
-                PRODUCTO: item.PRODUCTO,
-                "A Reponer": solicitado,
-                Repuesto: repuesto,
-                "Equipo Logístico": equipoLogistico,
-                "Tipo Mercadería": tipoMercaderia, // NUEVO
-              });
+                let el = item["Equipo Logístico"] || "N/A";
+                let tm = item["Tipo Mercadería"] || "N/A";
+                if (rMap && rMap[item.Ubicacion]) {
+                    el = rMap[item.Ubicacion].EL || el;
+                    tm = rMap[item.Ubicacion].TM || tm;
+                }
+                faltantes.push({ ...item, Repuesto: repuesto, "Equipo Logístico": el, "Tipo Mercadería": tm });
             }
-          });
+        });
 
-          const div = document.getElementById("resultadoSeguimiento");
-          const exportarBtn = document.getElementById(
-            "exportarSeguimientoBtn"
-          );
+        const div = document.getElementById("resultadoSeguimiento");
+        const btn = document.getElementById("exportarSeguimientoBtn");
+        if (faltantes.length === 0) {
+            div.innerHTML = "<p>✅ Todo repuesto correctamente.</p>";
+            btn.disabled = true;
+        } else {
+            btn.disabled = false;
+            let t = "<h3>Pendientes:</h3><table><tr><th>Ubicación</th><th>SKU</th><th>PRODUCTO</th><th>Solicitado</th><th>Repuesto</th><th>Equipo</th></tr>";
+            faltantes.forEach(f => {
+                t += `<tr><td>${f.Ubicacion}</td><td>${f.SKU}</td><td>${f.PRODUCTO}</td><td>${f["A Reponer"]}</td><td>${f.Repuesto}</td><td>${f["Equipo Logístico"]}</td></tr>`;
+            });
+            div.innerHTML = t + "</table>";
+        }
+        toggleLoader(false);
+    }
 
-          if (faltantes.length === 0) {
-            div.innerHTML = "<p>✅ Todos los productos han sido repuestos.</p>";
-            exportarBtn.disabled = true;
-            return;
-          }
-
-          exportarBtn.disabled = false;
-
-          // Incluye Tipo Mercadería en el encabezado de la tabla de seguimiento
-          let tabla =
-            "<h3>Productos que aún faltan por reponer:</h3><table><tr><th>Ubicación</th><th>Número de LPN</th><th>SKU</th><th>PRODUCTO</th><th>A Reponer</th><th>Repuesto</th><th>Equipo Logístico</th><th>Tipo Mercadería</th></tr>";
-          faltantes.forEach((f) => {
-            // Incluye Tipo Mercadería en el cuerpo de la tabla
-            tabla += `<tr>
-                            <td>${f.Ubicacion}</td>
-                            <td>${f["Número de LPN"]}</td>
-                            <td>${f.SKU}</td>
-                            <td>${f.PRODUCTO}</td>
-                            <td>${f["A Reponer"]}</td>
-                            <td>${f.Repuesto}</td>
-                            <td>${f["Equipo Logístico"]}</td>
-                            <td>${f["Tipo Mercadería"]}</td>
-                        </tr>`;
-          });
-          tabla += "</table>";
-          div.innerHTML = tabla;
-      }; // Fin de procesarVerificacion
-
-      // 1. Leer Archivo de Resultado de Cruce
-      leerArchivo(resultadoFile, (resultadoData) => {
-          // 2. Leer Archivo Detalle Reposición
-          leerArchivo(detalleFile, (detalleData) => {
-
-              // 3. Condicionalmente leer y cruzar el archivo de Ubicaciones Tipo Reserva
-              if (reservasFile) {
-                  leerArchivo(reservasFile, (reservasData) => {
-                       const reservasMap = reservasData.reduce((acc, row) => {
-                          const ubicacion = String(
-                              row["Ubicación Texto"] || row["Ubicacion Texto"] || row["Ubicacion"] || ""
-                          ).trim();
-                          const equipoLogistico =
-                              row["Equipo Logístico"] || row["Equipo Logistico"] || "No Asignado";
-                          const tipoMercaderia =
-                              row["Tipo Mercadería"] || row["Tipo Mercaderia"] || "Sin Clasificar"; // NUEVO
-
-                          if (ubicacion) {
-                              acc[ubicacion] = {
-                                  EquipoLogistico: equipoLogistico,
-                                  TipoMercaderia: tipoMercaderia,
-                              };
-                          }
-                          return acc;
-                      }, {});
-                      procesarVerificacion(resultadoData, detalleData, reservasMap);
-                  });
-              } else {
-                  // Si no se cargó el archivo de reservas, usa el dato del archivo de resultado.
-                  procesarVerificacion(resultadoData, detalleData, null);
-              }
-          });
-      });
+    function exportarResultado() {
+        // Quitamos la propiedad interna 'Semaforo' antes de exportar
+        const dataParaExcel = resultadoFiltrado.map(({Semaforo, ...resto}) => resto);
+        const ws = XLSX.utils.json_to_sheet(dataParaExcel);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Reposición");
+        XLSX.writeFile(wb, "resultado_cruce.xlsx");
     }
 
     function exportarSeguimiento() {
-      if (faltantes.length === 0) {
-        alert("No hay productos pendientes para exportar.");
-        return;
-      }
+        const ws = XLSX.utils.json_to_sheet(faltantes);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Seguimiento");
+        XLSX.writeFile(wb, "seguimiento_faltantes.xlsx");
+    }
 
-      // Incluye Tipo Mercadería en la exportación de seguimiento
-      const datosExportar = faltantes.map((f) => ({
-        Ubicacion: f.Ubicacion,
-        "Número de LPN": f["Número de LPN"],
-        SKU: f.SKU,
-        PRODUCTO: f.PRODUCTO,
-        "A Reponer": f["A Reponer"],
-        Repuesto: f.Repuesto,
-        "Equipo Logístico": f["Equipo Logístico"],
-        "Tipo Mercadería": f["Tipo Mercadería"], // NUEVO
-      }));
+    function filtrarDiv(div) {
+        const filtros = {
+            "DIV 01": ["HERRAMIENTAS", "FERRETERIA", "MATERIALES DE CONTRUCCION"],
+            "DIV 02": ["PISOS Y REVESTIMIENTOS", "ELECTRO HOGAR", "PINTURAS", "BANOS"],
+            "DIV 03": ["ELECTRICIDAD", "GASFITERIA", "ILUMINACION"],
+            "DIV 04": ["AIRE LIBRE Y TEMPORADA", "JARDIN", "LIMPIEZA", "MUEBLES", "ORGANIZACION Y DECORACION"],
+        };
+        resultadoFiltrado = (div === "TODOS") ? [...resultadoFinal] : resultadoFinal.filter(p => filtros[div].includes((p["Jerarquía"] || "").toUpperCase()));
+        actualizarDashboard(); mostrarResultado();
+    }
 
-      const ws = XLSX.utils.json_to_sheet(datosExportar);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Seguimiento Reposición");
-      XLSX.writeFile(wb, "seguimiento_reposicion.xlsx");
+    function buscarEnTabla() {
+        const bus = document.getElementById('searchInput').value.toUpperCase();
+        const filas = document.querySelector("#resultado table").getElementsByTagName("tr");
+        for (let i = 1; i < filas.length; i++) {
+            filas[i].style.display = filas[i].textContent.toUpperCase().includes(bus) ? "" : "none";
+        }
     }
 </script>
 </body>
