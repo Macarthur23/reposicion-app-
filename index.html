@@ -22,6 +22,7 @@
         .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center; border-top: 4px solid #c8102e; }
         .card span { font-size: 1.5em; font-weight: bold; color: #c8102e; }
         #statVencimiento { color: #f57c00; }
+        #statEfectividad { color: #2e7d32; }
 
         #searchInput { padding: 10px; width: 100%; max-width: 300px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; }
         #loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 1000; justify-content: center; align-items: center; font-weight: bold; }
@@ -70,7 +71,9 @@
 
     <div class="container">
         <div id="resumenCruce" class="dashboard" style="display:none;">
-            <div class="card">Total SKUs <br><span id="statSkus">0</span></div>
+            <div class="card">SKUs Pistoleados <br><span id="statPistoleados">0</span></div>
+            <div class="card">SKUs con Stock <br><span id="statSkus">0</span></div>
+            <div class="card">Efectividad <br><span id="statEfectividad">0%</span></div>
             <div class="card">Unidades Reponer <br><span id="statUnidades">0</span></div>
             <div class="card">Próximos a Vencer <br><span id="statVencimiento">0</span></div>
             <div class="card">Alertas (Sin Stock) <br><span id="statAlertas">0</span></div>
@@ -114,6 +117,7 @@
     let faltantes = [];
     let alertasCruce = 0;
     let proximosAVencerCount = 0;
+    let totalSkusPistoleados = 0;
 
     function limpiarTodo() {
         document.querySelectorAll('input[type="file"]').forEach(input => input.value = "");
@@ -122,6 +126,7 @@
         faltantes = [];
         alertasCruce = 0;
         proximosAVencerCount = 0;
+        totalSkusPistoleados = 0;
         document.getElementById("resultado").innerHTML = "";
         document.getElementById("resultadoSeguimiento").innerHTML = "";
         document.getElementById("searchInput").style.display = "none";
@@ -173,6 +178,10 @@
                     resultadoFinal = [];
                     alertasCruce = 0;
                     proximosAVencerCount = 0;
+
+                    const listaSkusPistoleados = [...new Set(pData.map(p => String(p.SKU || p["Sku"] || "").trim()))].filter(s => s !== "");
+                    totalSkusPistoleados = listaSkusPistoleados.length;
+
                     const hoy = new Date(); hoy.setHours(0,0,0,0);
                     const limiteVenc = new Date(); limiteVenc.setDate(hoy.getDate() + 30);
 
@@ -206,26 +215,33 @@
                         };
                     }).filter(w => w.StockDisponible > 0);
 
+                    const demandaConsolidada = pData.reduce((acc, p) => {
+                        const sku = String(p.SKU || p["Sku"] || "").trim();
+                        const cant = parseInt(p.QUANTITY || p["Cantidad"] || 0);
+                        const prod = p.PRODUCTO || p["Descripción"] || "Sin nombre";
+                        if (!acc[sku]) acc[sku] = { cant: 0, nombre: prod };
+                        acc[sku].cant += cant;
+                        return acc;
+                    }, {});
+
                     const acumuladoPorLpnSku = {};
 
-                    pData.forEach((p) => {
-                        const sku = String(p.SKU || p["Sku"] || "").trim();
-                        let restoADespachar = parseInt(p.QUANTITY || p["Cantidad"] || 0);
-                        const prod = p.PRODUCTO || p["Descripción"] || "Sin nombre";
+                    Object.keys(demandaConsolidada).forEach((sku) => {
+                        let restoADespachar = demandaConsolidada[sku].cant;
+                        const nombreProd = demandaConsolidada[sku].nombre;
 
-                        const bultosCandidatos = stockRealWMS.filter(w => w.SKU === sku)
+                        const bultosCandidatos = stockRealWMS.filter(w => w.SKU === sku && w.StockDisponible > 0)
                             .sort((a,b) => {
-                                if (a.VenceObj && b.VenceObj) {
-                                    if (a.VenceObj.getTime() !== b.VenceObj.getTime()) return a.VenceObj - b.VenceObj;
-                                } else if (a.VenceObj) return -1;
-                                else if (b.VenceObj) return 1;
+                                if (a.VenceObj && b.VenceObj) return a.VenceObj - b.VenceObj;
+                                if (a.VenceObj) return -1;
+                                if (b.VenceObj) return 1;
                                 return a.LpnNum - b.LpnNum;
                             });
 
                         if (bultosCandidatos.length === 0) alertasCruce++;
 
                         for (const bulto of bultosCandidatos) {
-                            if (restoADespachar <= 0 || bulto.StockDisponible <= 0) break;
+                            if (restoADespachar <= 0) break;
 
                             const extraible = Math.min(bulto.StockDisponible, restoADespachar);
                             const key = `${bulto.LPN}_${sku}`;
@@ -246,7 +262,7 @@
                                     "Número de Pale": bulto.Pale,
                                     "Número de LPN": bulto.LPN,
                                     SKU: sku,
-                                    PRODUCTO: prod,
+                                    PRODUCTO: nombreProd,
                                     "Un Actual": bulto.StockOriginal,
                                     "A Reponer": 0,
                                     "Días para Vencer": diasRestantes,
@@ -278,7 +294,12 @@
 
     function actualizarDashboard() {
         document.getElementById('resumenCruce').style.display = 'grid';
-        document.getElementById('statSkus').innerText = [...new Set(resultadoFiltrado.map(p => p.SKU))].length;
+        const skusConStock = [...new Set(resultadoFiltrado.map(p => p.SKU))].length;
+        const efectividad = totalSkusPistoleados > 0 ? ((skusConStock / totalSkusPistoleados) * 100).toFixed(1) : 0;
+
+        document.getElementById('statPistoleados').innerText = totalSkusPistoleados;
+        document.getElementById('statSkus').innerText = skusConStock;
+        document.getElementById('statEfectividad').innerText = efectividad + "%";
         document.getElementById('statUnidades').innerText = resultadoFiltrado.reduce((acc, p) => acc + p["A Reponer"], 0);
         document.getElementById('statVencimiento').innerText = proximosAVencerCount;
         document.getElementById('statAlertas').innerText = alertasCruce;
