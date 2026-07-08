@@ -349,22 +349,36 @@
         const resF = document.getElementById("resultadoFile").files[0];
         const detF = document.getElementById("detalleFile").files[0];
         const rvF = document.getElementById("reservasFileVerificacion").files[0];
-        if (!resF || !detF) { alert("Sube los archivos necesarios."); return; }
+
+        if (!resF || !detF) { alert("Sube al menos el Resultado del Cruce y el Detalle de Reposición WMS."); return; }
 
         toggleLoader(true);
         leerArchivo(resF, (resData) => {
             leerArchivo(detF, (detData) => {
+                // 1. Consolidar movimientos del WMS por SKU limpiando negativos
                 const movimientos = detData.reduce((acc, cur) => {
-                    const sku = String(cur.SKU || cur["Sku"] || "").trim();
-                    acc[sku] = (acc[sku] || 0) + parseInt(cur["Cantidad Ajustada"] || cur["Cantidad"] || 0);
+                    const sku = String(cur.SKU || cur["Sku"] || cur["Articulo"] || "").trim();
+                    if (sku) {
+                        // Usamos Math.abs() porque en el Excel de Promart viene como -20, -100, etc.
+                        const cantRaw = cur["Cantidad Ajustada"] || cur["Cantidad"] || cur["Cant"] || 0;
+                        const cant = Math.abs(parseInt(cantRaw) || 0);
+
+                        acc[sku] = (acc[sku] || 0) + cant;
+                    }
                     return acc;
                 }, {});
 
+                // 2. Verificar si se adjuntó el archivo opcional de reservas
                 if (rvF) {
                     leerArchivo(rvF, (rvData) => {
                         const rMap = rvData.reduce((acc, row) => {
-                            const u = String(row["Ubicación Texto"] || row["Ubicacion"] || "").trim();
-                            acc[u] = { EL: row["Equipo Logístico"], TM: row["Tipo Mercadería"] };
+                            const u = String(row["Ubicación Texto"] || row["Ubicacion Texto"] || row["Ubicacion"] || "").trim();
+                            if (u) {
+                                acc[u] = {
+                                    EL: row["Equipo Logístico"] || "N/A",
+                                    TM: row["Tipo Mercadería"] || "N/A"
+                                };
+                            }
                             return acc;
                         }, {});
                         procesarSeguimientoFinal(resData, movimientos, rMap);
@@ -378,26 +392,77 @@
 
     function procesarSeguimientoFinal(resData, movimientos, rMap) {
         faltantes = [];
-        resData.forEach(item => {
-            const sku = String(item.SKU || "").trim();
-            const solicitado = parseInt(item["A Reponer"] || 0);
-            const repuesto = Math.abs(movimientos[sku] || 0);
 
+        resData.forEach(item => {
+            const sku = String(item.SKU || item.Sku || item["Articulo"] || "").trim();
+            if (!sku) return;
+
+            // Mapeamos variaciones de la columna "A Reponer" generadas en la exportación
+            const solicitado = parseInt(item["A Reponer"] || item["A reponer"] || item["Cantidad"] || item["QUANTITY"] || 0);
+            const repuesto = movimientos[sku] || 0;
+
+            // Si se repuso menos de lo solicitado, va a la lista de pendientes
             if (repuesto < solicitado) {
-                faltantes.push({ ...item, Repuesto: repuesto, "Pendiente": solicitado - repuesto });
+                let ubi = String(item.Ubicacion || item.Ubicación || "N/A").trim();
+                let el = item["Equipo Logístico"] || "N/A";
+                let tm = item["Tipo Mercadería"] || "N/A";
+
+                if (rMap && rMap[ubi]) {
+                    el = rMap[ubi].EL;
+                    tm = rMap[ubi].TM;
+                }
+
+                faltantes.push({
+                    Ubicacion: ubi,
+                    "Número de Pale": item["Número de Pale"] || item["Pale"] || item["Número de pallet"] || "N/A",
+                    "Número de LPN": item["Número de LPN"] || item["LPN"] || "N/A",
+                    SKU: sku,
+                    PRODUCTO: item.PRODUCTO || item.Producto || item["Descripción"] || "N/A",
+                    "A Reponer": solicitado,
+                    Repuesto: repuesto,
+                    "Pendiente": solicitado - repuesto,
+                    "Equipo Logístico": el,
+                    "Tipo Mercadería": tm
+                });
             }
         });
 
+        // 3. Renderizar resultados en la interfaz
         const div = document.getElementById("resultadoSeguimiento");
         const btn = document.getElementById("exportarSeguimientoBtn");
+
         if (faltantes.length === 0) {
-            div.innerHTML = "<p style='color: green; font-weight: bold;'>✅ Todo repuesto correctamente.</p>";
+            div.innerHTML = `
+                <div style='color: #2e7d32; font-weight: bold; background: #e8f5e9; padding: 15px; border-radius: 8px; border: 1px solid #a5d6a7; text-align: center; margin-top: 15px;'>
+                    ✅ ¡Excelente! Todo lo solicitado ha sido repuesto en el WMS. Efectividad al 100%.
+                </div>`;
             btn.disabled = true;
         } else {
             btn.disabled = false;
-            let t = "<h3>Pendientes de Reposición:</h3><table><tr><th>Ubicación</th><th>Número de Pale</th><th>Número de LPN</th><th>SKU</th><th>PRODUCTO</th><th>Solicitado</th><th>Repuesto</th><th>Pendiente</th></tr>";
+            let t = `<h3>⚠️ SKUs con Reposición Incompleta o Pendiente:</h3>
+                     <table>
+                        <tr>
+                            <th>Ubicación</th>
+                            <th>Número de Pale</th>
+                            <th>Número de LPN</th>
+                            <th>SKU</th>
+                            <th>PRODUCTO</th>
+                            <th>Solicitado</th>
+                            <th>Repuesto en WMS</th>
+                            <th>Falta Reponer</th>
+                        </tr>`;
+
             faltantes.forEach(f => {
-                t += `<tr><td>${f.Ubicacion}</td><td>${f["Número de Pale"]}</td><td>${f["Número de LPN"]}</td><td>${f.SKU}</td><td>${f.PRODUCTO}</td><td>${f["A Reponer"]}</td><td>${f.Repuesto}</td><td style='color:red; font-weight:bold;'>${f.Pendiente}</td></tr>`;
+                t += `<tr>
+                    <td>${f.Ubicacion}</td>
+                    <td>${f["Número de Pale"]}</td>
+                    <td>${f["Número de LPN"]}</td>
+                    <td>${f.SKU}</td>
+                    <td>${f.PRODUCTO}</td>
+                    <td style='text-align: center; font-weight: bold;'>${f["A Reponer"]}</td>
+                    <td style='text-align: center; color: #2e7d32; font-weight: bold;'>${f.Repuesto}</td>
+                    <td style='color:#c8102e; font-weight:bold; text-align: center; background-color: #ffcccc;'>${f.Pendiente}</td>
+                </tr>`;
             });
             div.innerHTML = t + "</table>";
         }
