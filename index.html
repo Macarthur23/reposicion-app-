@@ -100,8 +100,10 @@
         .empty { margin: 0; padding: 28px 16px; text-align: center; color: var(--muted); }
 
         table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-        thead th { position: sticky; top: 0; z-index: 1; background: var(--ink); color: #fff; font-weight: 700; text-align: left; padding: 11px 12px; white-space: nowrap; }
-        tbody td { padding: 9px 12px; border-bottom: 1px solid #EEF0F3; vertical-align: middle; }
+        thead th { position: sticky; top: 0; z-index: 1; background: var(--ink); color: #fff; font-weight: 700; text-align: left; padding: 11px 10px; white-space: nowrap; }
+        tbody td { padding: 9px 10px; border-bottom: 1px solid #EEF0F3; vertical-align: middle; }
+        #resultado td:nth-child(-n+4), #resultadoSeguimiento td:nth-child(-n+4) { white-space: nowrap; }
+        #resultado td:nth-child(5), #resultadoSeguimiento td:nth-child(5) { min-width: 200px; }
         tbody tr:nth-child(even) { background: #FAFAFB; }
         tbody tr:hover { background: var(--orange-tint); }
         .c { text-align: center; }
@@ -117,6 +119,7 @@
 
         .notice { padding: 14px 16px; font-weight: 700; }
         .notice.ok { background: #E7F7EC; color: var(--ok); text-align: center; }
+        .notice.hint { background: var(--bg); color: var(--ink-soft); font-weight: 600; font-size: 13.5px; }
         .notice.warn { background: #FEEFC3; color: #8A4B08; }
 
         #loader { display: none; position: fixed; inset: 0; z-index: 3000; background: rgba(30,18,13,.55); backdrop-filter: blur(2px); justify-content: center; align-items: center; }
@@ -374,6 +377,14 @@
                     const listaSkusPistoleados = [...new Set(pData.map(p => String(p.SKU || p["Sku"] || "").trim()))].filter(s => s !== "");
                     totalSkusPistoleados = listaSkusPistoleados.length;
 
+                    // Jerarquía de respaldo para SKUs que no están en el WMS: el área del pistoleo
+                    const areaPorSku = {};
+                    pData.forEach(p => {
+                        const s = String(p.SKU || p["Sku"] || "").trim();
+                        const area = String(p.AREA || p["Área"] || p["Area"] || "").trim();
+                        if (s && area && !areaPorSku[s]) areaPorSku[s] = area;
+                    });
+
                     const hoy = new Date(); hoy.setHours(0,0,0,0);
                     const limiteVenc = new Date(); limiteVenc.setDate(hoy.getDate() + 30);
 
@@ -445,7 +456,7 @@
                                 PRODUCTO: nombreProd,
                                 "Cantidad Pistoleada": demandaConsolidada[sku].cant,
                                 Motivo: inf ? "Stock en 0 en el WMS" : "No aparece en el WMS",
-                                Jerarquía: inf ? inf.jer : ""
+                                Jerarquía: (inf && inf.jer) || areaPorSku[sku] || ""
                             });
                         }
 
@@ -556,6 +567,19 @@
         div.innerHTML = t + "</tbody></table>";
     }
 
+    function normClave(k) {
+        return String(k).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
+    }
+
+    // Busca el valor de una columna cuyo encabezado contenga alguno de los textos indicados
+    function valorPorClave(row, partes) {
+        for (const k of Object.keys(row)) {
+            const nk = normClave(k);
+            if (partes.some(p => nk.includes(p))) return row[k];
+        }
+        return undefined;
+    }
+
     function verificarReposicion() {
         const resF = document.getElementById("resultadoFile").files[0];
         const detF = document.getElementById("detalleFile").files[0];
@@ -566,102 +590,121 @@
         toggleLoader(true);
         leerArchivo(resF, (resData) => {
             leerArchivo(detF, (detData) => {
-                // 1. Consolidar movimientos del WMS por SKU limpiando negativos
-                const movimientos = detData.reduce((acc, cur) => {
-                    const sku = String(cur.SKU || cur["Sku"] || cur["Articulo"] || "").trim();
-                    if (sku) {
-                        // Usamos Math.abs() porque en el Excel de Promart viene como -20, -100, etc.
-                        const cantRaw = cur["Cantidad Ajustada"] || cur["Cantidad"] || cur["Cant"] || 0;
-                        const cant = Math.abs(parseInt(cantRaw) || 0);
+                // 1. Movimientos del WMS por LPN+SKU y por SKU (limpiando negativos)
+                const mov = { porLpn: {}, porSku: {}, hayLpn: false };
+                detData.forEach(cur => {
+                    const sku = String(cur.SKU || cur["Sku"] || cur["Articulo"] || valorPorClave(cur, ["sku"]) || "").trim();
+                    if (!sku) return;
+                    // Usamos Math.abs() porque en el Excel de Promart viene como -20, -100, etc.
+                    const cantRaw = cur["Cantidad Ajustada"] || valorPorClave(cur, ["ajustada"]) || cur["Cantidad"] || cur["Cant"] || 0;
+                    const cant = Math.abs(parseInt(cantRaw) || 0);
+                    mov.porSku[sku] = (mov.porSku[sku] || 0) + cant;
 
-                        acc[sku] = (acc[sku] || 0) + cant;
+                    const lpn = String(valorPorClave(cur, ["lpn"]) ?? "").trim();
+                    if (lpn) {
+                        mov.hayLpn = true;
+                        mov.porLpn[lpn + "|" + sku] = (mov.porLpn[lpn + "|" + sku] || 0) + cant;
                     }
-                    return acc;
-                }, {});
+                });
 
-                // 2. Verificar si se adjuntó el archivo opcional de reservas
+                // 2. Archivo opcional de reservas
                 if (rvF) {
                     leerArchivo(rvF, (rvData) => {
                         const rMap = rvData.reduce((acc, row) => {
                             const u = String(row["Ubicación Texto"] || row["Ubicacion Texto"] || row["Ubicacion"] || "").trim();
-                            if (u) {
-                                acc[u] = {
-                                    EL: row["Equipo Logístico"] || "N/A",
-                                    TM: row["Tipo Mercadería"] || "N/A"
-                                };
-                            }
+                            if (u) acc[u] = { EL: row["Equipo Logístico"] || "N/A", TM: row["Tipo Mercadería"] || "N/A" };
                             return acc;
                         }, {});
-                        procesarSeguimientoFinal(resData, movimientos, rMap);
+                        procesarSeguimientoFinal(resData, mov, rMap);
                     });
                 } else {
-                    procesarSeguimientoFinal(resData, movimientos, null);
+                    procesarSeguimientoFinal(resData, mov, null);
                 }
             });
         });
     }
 
-    function procesarSeguimientoFinal(resData, movimientos, rMap) {
+    function procesarSeguimientoFinal(resData, mov, rMap) {
         faltantes = [];
 
+        // Filas solicitadas en el resultado del cruce
+        const filas = [];
         resData.forEach(item => {
             const sku = String(item.SKU || item.Sku || item["Articulo"] || "").trim();
             if (!sku) return;
-
             // Mapeamos variaciones de la columna "A Reponer" generadas en la exportación
-            const solicitado = parseInt(item["A Reponer"] || item["A reponer"] || item["Cantidad"] || item["QUANTITY"] || 0);
-            const repuesto = movimientos[sku] || 0;
+            const solicitado = parseInt(item["A Reponer"] || item["A reponer"] || item["Cantidad"] || item["QUANTITY"] || 0) || 0;
+            if (solicitado <= 0) return;
 
-            // Si se repuso menos de lo solicitado, va a la lista de pendientes
-            if (repuesto < solicitado) {
-                let ubi = String(item.Ubicacion || item.Ubicación || "N/A").trim();
-                let el = item["Equipo Logístico"] || "N/A";
-                let tm = item["Tipo Mercadería"] || "N/A";
+            let ubi = String(item.Ubicacion || item.Ubicación || "N/A").trim();
+            let el = item["Equipo Logístico"] || "N/A";
+            let tm = item["Tipo Mercadería"] || "N/A";
+            if (rMap && rMap[ubi]) { el = rMap[ubi].EL; tm = rMap[ubi].TM; }
 
-                if (rMap && rMap[ubi]) {
-                    el = rMap[ubi].EL;
-                    tm = rMap[ubi].TM;
-                }
-
-                faltantes.push({
-                    Ubicacion: ubi,
-                    "Número de Pale": item["Número de Pale"] || item["Pale"] || item["Número de pallet"] || "N/A",
-                    "Número de LPN": item["Número de LPN"] || item["LPN"] || "N/A",
-                    SKU: sku,
-                    PRODUCTO: item.PRODUCTO || item.Producto || item["Descripción"] || "N/A",
-                    "A Reponer": solicitado,
-                    Repuesto: repuesto,
-                    "Pendiente": solicitado - repuesto,
-                    "Equipo Logístico": el,
-                    "Tipo Mercadería": tm
-                });
-            }
+            filas.push({
+                Ubicacion: ubi,
+                "Número de Pale": item["Número de Pale"] || item["Pale"] || item["Número de pallet"] || "N/A",
+                "Número de LPN": String(item["Número de LPN"] || item["LPN"] || "N/A").trim(),
+                SKU: sku,
+                PRODUCTO: item.PRODUCTO || item.Producto || item["Descripción"] || "N/A",
+                "A Reponer": solicitado,
+                Repuesto: 0,
+                "Equipo Logístico": el,
+                "Tipo Mercadería": tm
+            });
         });
+
+        // Paso 1: cada fila se compara con lo ajustado en el detalle para ese mismo LPN y SKU
+        const restoLpn = { ...mov.porLpn };
+        const sobrante = { ...mov.porSku };
+        const vistos = new Set();
+        filas.forEach(f => {
+            const k = f["Número de LPN"] + "|" + f.SKU;
+            if (mov.porLpn[k] !== undefined && !vistos.has(k)) { vistos.add(k); sobrante[f.SKU] -= mov.porLpn[k]; }
+            const toma = Math.min(restoLpn[k] || 0, f["A Reponer"]);
+            restoLpn[k] = (restoLpn[k] || 0) - toma;
+            f.Repuesto = toma;
+        });
+
+        // Paso 2: lo ajustado en otros LPN del mismo SKU cubre lo que aún falta
+        // (también cubre el caso de un detalle sin columna de LPN, que se compara solo por SKU)
+        filas.forEach(f => {
+            const falta = f["A Reponer"] - f.Repuesto;
+            if (falta <= 0) return;
+            const cubre = Math.min(Math.max(sobrante[f.SKU] || 0, 0), falta);
+            sobrante[f.SKU] = (sobrante[f.SKU] || 0) - cubre;
+            f.Repuesto += cubre;
+        });
+
+        faltantes = filas
+            .filter(f => f.Repuesto < f["A Reponer"])
+            .map(f => ({ ...f, Pendiente: f["A Reponer"] - f.Repuesto }));
 
         // 3. Renderizar resultados en la interfaz
         const div = document.getElementById("resultadoSeguimiento");
         const btn = document.getElementById("exportarSeguimientoBtn");
+        let html = "";
 
         if (faltantes.length === 0) {
-            div.innerHTML = `<div class="notice ok">Todo lo solicitado ya fue repuesto en el WMS. Efectividad al 100%.</div>`;
+            html += `<div class="notice ok">Todo lo solicitado ya fue repuesto en el WMS. Efectividad al 100%.</div>`;
             btn.disabled = true;
         } else {
             btn.disabled = false;
-            let t = `<div class="notice warn">${faltantes.length} SKU(s) con reposición incompleta o pendiente</div>
-                     <table>
-                        <thead><tr>
-                            <th>Ubicación</th>
-                            <th>Número de Pale</th>
-                            <th>Número de LPN</th>
-                            <th>SKU</th>
-                            <th>Producto</th>
-                            <th class="c">Solicitado</th>
-                            <th class="c">Repuesto en WMS</th>
-                            <th class="c">Falta reponer</th>
-                        </tr></thead><tbody>`;
-
+            html += `<div class="notice warn">${faltantes.length} SKU(s) con reposición incompleta o pendiente</div>`;
+            if (!mov.hayLpn) html += `<div class="notice hint">El detalle de reposición no trae columna de LPN: la comparación se hizo solo por SKU.</div>`;
+            html += `<table>
+                <thead><tr>
+                    <th>Ubicación</th>
+                    <th>Número de Pale</th>
+                    <th>Número de LPN</th>
+                    <th>SKU</th>
+                    <th>Producto</th>
+                    <th class="c">Solicitado</th>
+                    <th class="c">Repuesto en WMS</th>
+                    <th class="c">Falta reponer</th>
+                </tr></thead><tbody>`;
             faltantes.forEach(f => {
-                t += `<tr>
+                html += `<tr>
                     <td>${f.Ubicacion}</td>
                     <td>${f["Número de Pale"]}</td>
                     <td>${f["Número de LPN"]}</td>
@@ -672,8 +715,9 @@
                     <td class="c"><span class="pill rojo">${f.Pendiente}</span></td>
                 </tr>`;
             });
-            div.innerHTML = t + "</tbody></table>";
+            html += "</tbody></table>";
         }
+        div.innerHTML = html;
         toggleLoader(false);
     }
 
@@ -689,13 +733,18 @@
         const ws = XLSX.utils.json_to_sheet(faltantes);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Seguimiento");
+
         XLSX.writeFile(wb, "seguimiento_faltantes.xlsx");
+    }
+
+    function normJer(t) {
+        return String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
     }
 
     function filtrarDiv(div) {
         marcarDiv(div);
         const filtros = {
-            "DIV 01": ["HERRAMIENTAS", "FERRETERIA", "MATERIALES DE CONTRUCCION"],
+            "DIV 01": ["HERRAMIENTAS", "FERRETERIA", "MATERIALES DE CONSTRUCCION", "MATERIALES DE CONTRUCCION"],
             "DIV 02": ["PISOS Y REVESTIMIENTOS", "ELECTRO HOGAR", "PINTURAS", "BANOS"],
             "DIV 03": ["ELECTRICIDAD", "GASFITERIA", "ILUMINACION"],
             "DIV 04": ["AIRE LIBRE Y TEMPORADA", "JARDIN", "LIMPIEZA", "MUEBLES", "ORGANIZACION Y DECORACION"],
@@ -706,7 +755,7 @@
             sinStockFiltrado = [...sinStockFinal];
         } else {
             const coincide = p => {
-                const jerVal = (p["Jerarquía"] || "").toUpperCase();
+                const jerVal = normJer(p["Jerarquía"]);
                 return filtros[div].some(f => jerVal.includes(f));
             };
             resultadoFiltrado = resultadoFinal.filter(coincide);
