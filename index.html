@@ -89,12 +89,13 @@
         .file input[type="file"]::file-selector-button:hover { background: #000; }
 
         .actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-        #searchInput, #searchSinStock { margin-left: auto; width: 100%; max-width: 340px; padding: 10px 14px 10px 38px; border: 1.5px solid var(--line); border-radius: 10px; font: 500 14.5px var(--font); color: var(--ink); background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='none' stroke='%237B716B' stroke-width='2' stroke-linecap='round' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") 12px center no-repeat; }
-        #searchInput:focus, #searchSinStock:focus { outline: none; border-color: var(--orange); box-shadow: 0 0 0 4px rgba(255,97,0,.15); }
+        #searchInput, #searchSinStock, #searchVentas { margin-left: auto; width: 100%; max-width: 340px; padding: 10px 14px 10px 38px; border: 1.5px solid var(--line); border-radius: 10px; font: 500 14.5px var(--font); color: var(--ink); background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='none' stroke='%237B716B' stroke-width='2' stroke-linecap='round' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") 12px center no-repeat; }
+        #searchInput:focus, #searchSinStock:focus, #searchVentas:focus { outline: none; border-color: var(--orange); box-shadow: 0 0 0 4px rgba(255,97,0,.15); }
 
-        #resultado, #resultadoSeguimiento, #resultadoSinStock { margin-top: 18px; border: 1px solid var(--line); border-radius: 12px; overflow: auto; max-height: 540px; background: #fff; }
-        #resultado:empty, #resultadoSeguimiento:empty, #resultadoSinStock:empty { border-style: dashed; background: transparent; padding: 30px 16px; text-align: center; color: var(--muted); max-height: none; }
+        #resultado, #resultadoSeguimiento, #resultadoSinStock, #resultadoVentas { margin-top: 18px; border: 1px solid var(--line); border-radius: 12px; overflow: auto; max-height: 540px; background: #fff; }
+        #resultado:empty, #resultadoSeguimiento:empty, #resultadoSinStock:empty, #resultadoVentas:empty { border-style: dashed; background: transparent; padding: 30px 16px; text-align: center; color: var(--muted); max-height: none; }
         #resultado:empty::before { content: "Sube los tres archivos y presiona Procesar cruce."; }
+        #resultadoVentas:empty::before { content: "Sube el Reporte 8 semanas junto a los otros archivos y procesa el cruce para ver este reporte."; }
         #resultadoSinStock:empty::before { content: "Procesa el cruce para ver los SKUs sin stock."; }
         #resultadoSeguimiento:empty::before { content: "Sube el resultado del cruce y el detalle del WMS para ver los pendientes."; }
         .empty { margin: 0; padding: 28px 16px; text-align: center; color: var(--muted); }
@@ -146,6 +147,21 @@
         .kpi em { font-style: normal; font-size: 12.5px; font-weight: 700; color: var(--orange-dark); }
         #sinStockResumen { margin-bottom: 18px; }
         #sinStockResumen:empty { display: none; }
+        #ventasResumen { margin-bottom: 14px; }
+        #ventasResumen:empty { display: none; }
+        .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+        .chips:empty { display: none; }
+        .chip-filter { appearance: none; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink-soft); font: 700 13px var(--font); padding: 6px 12px; border-radius: 999px; cursor: pointer; transition: background-color .15s, border-color .15s, color .15s; }
+        .chip-filter b { margin-left: 6px; font-variant-numeric: tabular-nums; }
+        .chip-filter:hover { border-color: var(--ink); }
+        .chip-filter.active { background: var(--ink); border-color: var(--ink); color: #fff; }
+        #resultadoVentas td:nth-child(2) { min-width: 140px; }
+        #resultadoVentas table { font-size: 13px; }
+        #resultadoVentas th, #resultadoVentas td { padding-left: 6px; padding-right: 6px; }
+        #resultadoVentas td:nth-child(3) { min-width: 110px; }
+        #ventasResumen .kpi span { font-size: 24px; }
+        .pill.neutro { background: #EEF0F3; color: var(--ink-soft); }
+        .neg { color: #B42318; }
         footer { background: var(--ink); color: rgba(255,255,255,.7); text-align: center; padding: 12px; font-size: 12.5px; font-weight: 600; letter-spacing: .06em; }
 
         @media (max-width: 860px) {
@@ -159,7 +175,7 @@
           .topbar, .divbar { padding-left: 16px; padding-right: 16px; }
           .container { padding: 16px; }
           .panel { padding: 18px; }
-          #searchInput, #searchSinStock { margin-left: 0; max-width: none; }
+          #searchInput, #searchSinStock, #searchVentas { margin-left: 0; max-width: none; }
         }
     </style>
 </head>
@@ -229,6 +245,7 @@
                             <label class="file">Pistoleo (reposición)<input type="file" id="pistoleoFile" accept=".xlsx, .csv" /></label>
                             <label class="file">WMS (stock ubicaciones)<input type="file" id="wmsFile" accept=".xlsx, .csv" /></label>
                             <label class="file">Ubicaciones reserva<input type="file" id="reservasFile" accept=".xlsx, .csv" /></label>
+                            <label class="file">Reporte 8 semanas (opcional)<input type="file" id="ventasFile" accept=".xlsx, .csv" /></label>
                         </div>
                         <div class="actions">
                             <button class="btn primary" onclick="procesarCruce()">Procesar cruce</button>
@@ -250,6 +267,18 @@
                             <input type="text" id="searchSinStock" placeholder="Buscar SKU o producto…" onkeyup="buscarEnSinStock()">
                         </div>
                         <div id="resultadoSinStock"></div>
+                    </section>
+
+                    <section class="panel">
+                        <h2>Sin stock con ventas de 8 semanas</h2>
+                        <p class="panel-sub">Cruce por SKU entre los SKUs sin stock y el Reporte 8 semanas: estado, ventas, stock, OC y transferencias.</p>
+                        <div id="ventasResumen" class="dashboard"></div>
+                        <div id="ventasEstados" class="chips"></div>
+                        <div class="actions">
+                            <button class="btn secondary" onclick="exportarVentas()">Exportar reporte</button>
+                            <input type="text" id="searchVentas" placeholder="Buscar SKU o producto…" onkeyup="buscarEnVentas()">
+                        </div>
+                        <div id="resultadoVentas"></div>
                     </section>
                 </section>
 
@@ -295,6 +324,10 @@
         document.querySelectorAll(".seg button").forEach(b => b.classList.toggle("active", b.dataset.div === div));
     }
 
+    let ventasData = null;
+    let ventasCargado = false;
+    let ventasPorSku = {};
+    let estadoFiltroVentas = "";
     let sinStockFinal = [];
     let sinStockFiltrado = [];
     let resultadoFinal = [];
@@ -324,6 +357,11 @@
         document.getElementById("resultadoSinStock").innerHTML = "";
         document.getElementById("sinStockResumen").innerHTML = "";
         document.getElementById("searchSinStock").value = "";
+        document.getElementById("searchVentas").value = "";
+        ventasData = null;
+        ventasCargado = false;
+        ventasPorSku = {};
+        estadoFiltroVentas = "";
         mostrarSinStock();
         marcarDiv("TODOS");
         irA("cruce");
@@ -360,6 +398,19 @@
     }
 
     function procesarCruce() {
+        const pF = document.getElementById("pistoleoFile").files[0];
+        const wF = document.getElementById("wmsFile").files[0];
+        const rF = document.getElementById("reservasFile").files[0];
+        const vF = document.getElementById("ventasFile").files[0];
+        if (!pF || !wF || !rF) { alert("Sube los 3 archivos para procesar."); return; }
+
+        ventasData = null;
+        if (!vF) { procesarCruceBase(); return; }
+        toggleLoader(true);
+        leerArchivo(vF, (vData) => { ventasData = vData; procesarCruceBase(); });
+    }
+
+    function procesarCruceBase() {
         const pFile = document.getElementById("pistoleoFile").files[0];
         const wFile = document.getElementById("wmsFile").files[0];
         const rFile = document.getElementById("reservasFile").files[0];
@@ -501,6 +552,19 @@
                     });
 
                     sinStockFinal.sort((a, b) => b["Cantidad Pistoleada"] - a["Cantidad Pistoleada"]);
+
+                    // Cruce por SKU con el Reporte 8 semanas (solo guardamos los SKUs sin stock)
+                    ventasPorSku = {};
+                    ventasCargado = ventasData !== null;
+                    estadoFiltroVentas = "";
+                    if (ventasCargado) {
+                        const necesarios = new Set(sinStockFinal.map(s => s.SKU));
+                        ventasData.forEach(v => {
+                            const s = String(v.SKU ?? v.Sku ?? "").trim();
+                            if (necesarios.has(s) && !ventasPorSku[s]) ventasPorSku[s] = v;
+                        });
+                        ventasData = null;
+                    }
                     resultadoFinal = Object.values(acumuladoPorLpnSku);
                     resultadoFiltrado = [...resultadoFinal];
                     sinStockFiltrado = [...sinStockFinal];
@@ -779,6 +843,7 @@
         const badge = document.getElementById("navSinStockBadge");
         badge.innerText = sinStockFiltrado.length;
         badge.classList.toggle("alert", sinStockFiltrado.length > 0);
+        mostrarSinStockVentas();
 
         if (totalSkusPistoleados === 0) { div.innerHTML = ""; resumen.innerHTML = ""; return; }
 
@@ -817,6 +882,137 @@
             </tr>`;
         });
         div.innerHTML = t + "</tbody></table>";
+    }
+
+    function esc(t) {
+        return String(t ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+    const fmtNum = n => Number(n).toLocaleString("es-PE", { maximumFractionDigits: 2 });
+    const fmtSoles = n => Number(n).toLocaleString("es-PE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const numVenta = (v, k) => (v ? (Number(v[k]) || 0) : 0);
+
+    function filasVentas() {
+        const filas = sinStockFiltrado.map(s => ({ s, v: ventasPorSku[s.SKU] || null }));
+        filas.sort((a, b) => numVenta(b.v, "Tot.Vta.Soles") - numVenta(a.v, "Tot.Vta.Soles"));
+        return filas;
+    }
+    const estadoDe = f => (f.v ? String(f.v.ESTADO || "Sin estado") : "Sin datos");
+
+    function filtrarEstadoVentas(est) {
+        estadoFiltroVentas = est;
+        mostrarSinStockVentas();
+    }
+
+    function mostrarSinStockVentas() {
+        const resumen = document.getElementById("ventasResumen");
+        const chips = document.getElementById("ventasEstados");
+        const div = document.getElementById("resultadoVentas");
+
+        if (!ventasCargado) { resumen.innerHTML = ""; chips.innerHTML = ""; div.innerHTML = ""; return; }
+        if (sinStockFinal.length === 0) {
+            resumen.innerHTML = ""; chips.innerHTML = "";
+            div.innerHTML = `<div class="notice ok">No hay SKUs sin stock para cruzar con el Reporte 8 semanas.</div>`;
+            return;
+        }
+
+        const filas = filasVentas();
+
+        // Dashboard
+        const conDatos = filas.filter(f => f.v).length;
+        const conVentas = filas.filter(f => numVenta(f.v, "Tot.Vta.Unid") > 0).length;
+        const ventaSoles = filas.reduce((a, f) => a + numVenta(f.v, "Tot.Vta.Soles"), 0);
+        const conStock = filas.filter(f => numVenta(f.v, "STOCK") > 0).length;
+        const conOC = filas.filter(f => numVenta(f.v, "OC") > 0).length;
+        const conTransf = filas.filter(f => numVenta(f.v, "TRANSF") > 0).length;
+        resumen.innerHTML = `
+            <div class="kpi"><small>SKUs sin stock</small><span>${filas.length}</span></div>
+            <div class="kpi"><small>Con ventas (8 sem.)</small><span>${conVentas}</span></div>
+            <div class="kpi"><small>Ventas (S/)</small><span>${fmtSoles(ventaSoles)}</span></div>
+            <div class="kpi"><small>Con STOCK</small><span>${conStock}</span></div>
+            <div class="kpi"><small>Con OC</small><span>${conOC}</span></div>
+            <div class="kpi"><small>Con TRANSF</small><span>${conTransf}</span></div>`;
+
+        // Filtro por ESTADO
+        const conteo = {};
+        filas.forEach(f => { const e = estadoDe(f); conteo[e] = (conteo[e] || 0) + 1; });
+        if (estadoFiltroVentas && !conteo[estadoFiltroVentas]) estadoFiltroVentas = "";
+        chips.innerHTML = `<button class="chip-filter ${estadoFiltroVentas === "" ? "active" : ""}" data-estado="" onclick="filtrarEstadoVentas(this.dataset.estado)">Todos<b>${filas.length}</b></button>` +
+            Object.entries(conteo).sort((a, b) => b[1] - a[1]).map(([e, n]) =>
+                `<button class="chip-filter ${estadoFiltroVentas === e ? "active" : ""}" data-estado="${esc(e)}" onclick="filtrarEstadoVentas(this.dataset.estado)">${esc(e)}<b>${n}</b></button>`).join("");
+
+        const visibles = estadoFiltroVentas ? filas.filter(f => estadoDe(f) === estadoFiltroVentas) : filas;
+        if (visibles.length === 0) { div.innerHTML = "<p class='empty'>Sin resultados para este filtro.</p>"; return; }
+
+        const celda = (v, k, fmt) => {
+            if (!v) return `<td class="c muted">N/A</td>`;
+            const n = Number(v[k]) || 0;
+            return `<td class="c ${n < 0 ? "neg" : ""}">${fmt(n)}</td>`;
+        };
+        let t = `<table>
+            <thead><tr>
+                <th>SKU</th>
+                <th>Producto</th>
+                <th>Jerarquía</th>
+                <th>ESTADO</th>
+                <th class="c">Prom.Vta.Unid</th>
+                <th class="c">Tot.Vta.Unid</th>
+                <th class="c">Prom.Vta.Soles</th>
+                <th class="c">Tot.Vta.Soles</th>
+                <th class="c">STOCK</th>
+                <th class="c">OC</th>
+                <th class="c">TRANSF</th>
+            </tr></thead><tbody>`;
+        visibles.forEach(f => {
+            const v = f.v;
+            t += `<tr>
+                <td class="sku">${esc(f.s.SKU)}</td>
+                <td>${esc(f.s.PRODUCTO)}</td>
+                <td>${f.s.Jerarquía ? esc(f.s.Jerarquía) : '<span class="muted">N/A</span>'}</td>
+                <td>${v ? `<span class="pill neutro">${esc(v.ESTADO || "Sin estado")}</span>` : '<span class="muted">Sin datos</span>'}</td>
+                ${celda(v, "Prom.Vta.Unid", fmtNum)}
+                ${celda(v, "Tot.Vta.Unid", fmtNum)}
+                ${celda(v, "Prom.Vta.Soles", fmtSoles)}
+                ${celda(v, "Tot.Vta.Soles", fmtSoles)}
+                ${celda(v, "STOCK", fmtNum)}
+                ${celda(v, "OC", fmtNum)}
+                ${celda(v, "TRANSF", fmtNum)}
+            </tr>`;
+        });
+        div.innerHTML = t + "</tbody></table>";
+        buscarEnVentas();
+    }
+
+    function buscarEnVentas() {
+        const bus = document.getElementById("searchVentas").value.toUpperCase();
+        const filas = document.querySelectorAll("#resultadoVentas table tr");
+        for (let i = 1; i < filas.length; i++) {
+            filas[i].style.display = filas[i].textContent.toUpperCase().includes(bus) ? "" : "none";
+        }
+    }
+
+    function exportarVentas() {
+        if (!ventasCargado) { alert("Sube el Reporte 8 semanas y procesa el cruce primero."); return; }
+        const filas = filasVentas().filter(f => !estadoFiltroVentas || estadoDe(f) === estadoFiltroVentas);
+        if (filas.length === 0) { alert("No hay datos para exportar."); return; }
+        const datos = filas.map(f => {
+            const v = f.v || {};
+            return {
+                SKU: f.s.SKU,
+                PRODUCTO: f.s.PRODUCTO,
+                "Jerarquía": f.s.Jerarquía || "",
+                ESTADO: f.v ? (v.ESTADO || "") : "Sin datos",
+                "Prom.Vta.Unid": v["Prom.Vta.Unid"] ?? "",
+                "Tot.Vta.Unid": v["Tot.Vta.Unid"] ?? "",
+                "Prom.Vta.Soles": v["Prom.Vta.Soles"] ?? "",
+                "Tot.Vta.Soles": v["Tot.Vta.Soles"] ?? "",
+                STOCK: v.STOCK ?? "",
+                OC: v.OC ?? "",
+                TRANSF: v.TRANSF ?? ""
+            };
+        });
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(datos), "Sin stock + ventas");
+        XLSX.writeFile(wb, "sin_stock_ventas_8_semanas.xlsx");
     }
 
     function buscarEnSinStock() {
