@@ -375,7 +375,19 @@
         reader.onload = (e) => {
             const workbook = XLSX.read(e.target.result, { type: "binary" });
             const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            callback(XLSX.utils.sheet_to_json(sheet, { defval: "" }));
+            if (!sheet || !sheet["!ref"]) { callback([]); return; }
+
+            // Algunos reportes del WMS traen un título sobre los encabezados (ej. "Movimientos de LPN").
+            // Buscamos la primera fila con 3 o más celdas llenas y la usamos como encabezado.
+            const rango = XLSX.utils.decode_range(sheet["!ref"]);
+            const zona = { s: rango.s, e: { r: Math.min(rango.e.r, rango.s.r + 29), c: rango.e.c } };
+            const primeras = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "", blankrows: true, range: zona });
+            let fila = 0;
+            for (let i = 0; i < primeras.length; i++) {
+                if (primeras[i].filter(c => String(c).trim() !== "").length >= 3) { fila = i; break; }
+            }
+            if (fila === 0) { callback(XLSX.utils.sheet_to_json(sheet, { defval: "" })); return; }
+            callback(XLSX.utils.sheet_to_json(sheet, { defval: "", range: rango.s.r + fila }));
         };
         reader.readAsBinaryString(file);
     }
@@ -654,21 +666,20 @@
         toggleLoader(true);
         leerArchivo(resF, (resData) => {
             leerArchivo(detF, (detData) => {
-                // 1. Movimientos del WMS por LPN+SKU y por SKU (limpiando negativos)
-                const mov = { porLpn: {}, porSku: {}, hayLpn: false };
+                // 1. Movimientos del detalle: solo las salidas (cantidad ajustada negativa)
+                const mov = { lista: [], hayLpn: false };
                 detData.forEach(cur => {
                     const sku = String(cur.SKU || cur["Sku"] || cur["Articulo"] || valorPorClave(cur, ["sku"]) || "").trim();
                     if (!sku) return;
-                    // Usamos Math.abs() porque en el Excel de Promart viene como -20, -100, etc.
-                    const cantRaw = cur["Cantidad Ajustada"] || valorPorClave(cur, ["ajustada"]) || cur["Cantidad"] || cur["Cant"] || 0;
-                    const cant = Math.abs(parseInt(cantRaw) || 0);
-                    mov.porSku[sku] = (mov.porSku[sku] || 0) + cant;
-
+                    const ajRaw = cur["Cantidad Ajustada"] ?? valorPorClave(cur, ["ajustada"]) ?? cur["Cantidad"] ?? cur["Cant"] ?? 0;
+                    const aj = parseFloat(ajRaw) || 0;
                     const lpn = String(valorPorClave(cur, ["lpn"]) ?? "").trim();
-                    if (lpn) {
-                        mov.hayLpn = true;
-                        mov.porLpn[lpn + "|" + sku] = (mov.porLpn[lpn + "|" + sku] || 0) + cant;
-                    }
+                    if (lpn) mov.hayLpn = true;
+                    if (aj >= 0) return; // ingresos, cambios de ubicación y ceros no son reposición
+
+                    const origRaw = valorPorClave(cur, ["original"]);
+                    const orig = (origRaw === undefined || String(origRaw).trim() === "") ? null : parseFloat(origRaw);
+                    mov.lista.push({ sku, lpn, orig: isNaN(orig) ? null : orig, cant: Math.abs(aj) });
                 });
 
                 // 2. Archivo opcional de reservas
@@ -705,6 +716,7 @@
             let tm = item["Tipo Mercadería"] || "N/A";
             if (rMap && rMap[ubi]) { el = rMap[ubi].EL; tm = rMap[ubi].TM; }
 
+            const stockCruce = parseFloat(item["Un Actual"]);
             filas.push({
                 Ubicacion: ubi,
                 "Número de Pale": item["Número de Pale"] || item["Pale"] || item["Número de pallet"] || "N/A",
@@ -714,35 +726,45 @@
                 "A Reponer": solicitado,
                 Repuesto: 0,
                 "Equipo Logístico": el,
-                "Tipo Mercadería": tm
+                "Tipo Mercadería": tm,
+                _stockCruce: isNaN(stockCruce) ? null : stockCruce
             });
         });
 
-        // Paso 1: cada fila se compara con lo ajustado en el detalle para ese mismo LPN y SKU
-        const restoLpn = { ...mov.porLpn };
-        const sobrante = { ...mov.porSku };
-        const vistos = new Set();
-        filas.forEach(f => {
-            const k = f["Número de LPN"] + "|" + f.SKU;
-            if (mov.porLpn[k] !== undefined && !vistos.has(k)) { vistos.add(k); sobrante[f.SKU] -= mov.porLpn[k]; }
-            const toma = Math.min(restoLpn[k] || 0, f["A Reponer"]);
-            restoLpn[k] = (restoLpn[k] || 0) - toma;
-            f.Repuesto = toma;
-        });
-
-        // Paso 2: lo ajustado en otros LPN del mismo SKU cubre lo que aún falta
-        // (también cubre el caso de un detalle sin columna de LPN, que se compara solo por SKU)
-        filas.forEach(f => {
-            const falta = f["A Reponer"] - f.Repuesto;
-            if (falta <= 0) return;
-            const cubre = Math.min(Math.max(sobrante[f.SKU] || 0, 0), falta);
-            sobrante[f.SKU] = (sobrante[f.SKU] || 0) - cubre;
-            f.Repuesto += cubre;
-        });
+        if (mov.hayLpn) {
+            // Por LPN y SKU: cuenta solo las salidas hechas desde el stock que tenía el LPN al generar el cruce.
+            // Una salida con cantidad original mayor a ese stock es anterior al cruce (otra reposición) y no cuenta.
+            const salidas = {};
+            mov.lista.forEach(m => {
+                if (!m.lpn) return;
+                (salidas[m.lpn + "|" + m.sku] = salidas[m.lpn + "|" + m.sku] || []).push(m);
+            });
+            const resto = {};
+            filas.forEach(f => {
+                const k = f["Número de LPN"] + "|" + f.SKU;
+                if (resto[k] === undefined) {
+                    resto[k] = (salidas[k] || [])
+                        .filter(m => f._stockCruce === null || m.orig === null || m.orig <= f._stockCruce)
+                        .reduce((acc, m) => acc + m.cant, 0);
+                }
+                const toma = Math.min(resto[k], f["A Reponer"]);
+                resto[k] -= toma;
+                f.Repuesto = toma;
+            });
+        } else {
+            // Detalle sin columna de LPN: se compara solo por SKU
+            const porSku = {};
+            mov.lista.forEach(m => { porSku[m.sku] = (porSku[m.sku] || 0) + m.cant; });
+            filas.forEach(f => {
+                const toma = Math.min(porSku[f.SKU] || 0, f["A Reponer"]);
+                porSku[f.SKU] = (porSku[f.SKU] || 0) - toma;
+                f.Repuesto = toma;
+            });
+        }
 
         faltantes = filas
             .filter(f => f.Repuesto < f["A Reponer"])
-            .map(f => ({ ...f, Pendiente: f["A Reponer"] - f.Repuesto }));
+            .map(({ _stockCruce, ...f }) => ({ ...f, Pendiente: f["A Reponer"] - f.Repuesto }));
 
         // 3. Renderizar resultados en la interfaz
         const div = document.getElementById("resultadoSeguimiento");
